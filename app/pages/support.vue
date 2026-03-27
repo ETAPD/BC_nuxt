@@ -125,7 +125,7 @@
 </template>
 
 <script lang="ts">
-import { mapWritableState } from 'pinia'
+import { mapWritableState } from "pinia";
 
 export default defineComponent({
   name: "SupportView",
@@ -191,7 +191,12 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapWritableState(useSupportFormStore, ['activeTab', 'selectedSubject', 'customSubject', 'message']),
+    ...mapWritableState(useSupportFormStore, [
+      "activeTab",
+      "selectedSubject",
+      "customSubject",
+      "message",
+    ]),
     finalSubject() {
       return this.selectedSubject === "__other"
         ? this.customSubject.trim()
