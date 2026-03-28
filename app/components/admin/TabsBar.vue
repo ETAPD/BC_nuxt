@@ -19,6 +19,7 @@ const tabs = [
   { key: 'orders', label: 'Príkazy', icon: '📋' },
   { key: 'trades', label: 'Obchody', icon: '📊' },
   { key: 'holdings', label: 'Držby', icon: '📦' },
+  { key: 'messages', label: 'Správy', icon: '✉️' },
   { key: 'tickets', label: 'Tikety', icon: '🎫' },
 ] as const
 

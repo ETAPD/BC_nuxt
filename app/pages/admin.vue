@@ -29,7 +29,7 @@
         :orders-count="orders.length"
         :trades-count="trades.length"
         :holdings-count="holdings.length"
-        :messages-count="contactMessages.length"
+        :tickets-count="tickets.length"
       />
 
       <TabsBar :active-tab="activeTab" @update:activeTab="activeTab = $event" />
