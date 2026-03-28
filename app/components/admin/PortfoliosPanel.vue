@@ -49,38 +49,30 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
+const props = defineProps<{
+  portfolios: any[]
+}>()
 
-export default defineComponent({
-  name: 'PortfoliosPanel',
-  props: {
-    portfolios: {
-      type: Array as PropType<any[]>,
-      required: true,
-    },
-  },
-  methods: {
-    formatCurrency(value: number, currency = 'USD') {
-      if (value == null) return (0).toLocaleString('en-US', { style: 'currency', currency })
-      try {
-        return value.toLocaleString('en-US', { style: 'currency', currency })
-      } catch {
-        return String(value)
-      }
-    },
-    formatDate(value: string) {
-      if (!value) return '—'
-      return new Date(value).toLocaleDateString('sk-SK', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    },
-  },
-})
+function formatCurrency(value: number, currency = 'USD') {
+  if (value == null) return (0).toLocaleString('en-US', { style: 'currency', currency })
+  try {
+    return value.toLocaleString('en-US', { style: 'currency', currency })
+  } catch {
+    return String(value)
+  }
+}
+
+function formatDate(value: string) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('sk-SK', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 </script>
 
 <style scoped>

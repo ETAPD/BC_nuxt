@@ -30,56 +30,46 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ChangePasswordModal',
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    saving: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['update:modelValue', 'submit'],
-  data() {
-    return {
-      newPassword: '',
-      confirmPassword: '',
-      localError: '',
-    }
-  },
-  watch: {
-    modelValue(value) {
-      if (!value) {
-        this.reset()
-      }
-    },
-  },
-  methods: {
-    close() {
-      this.$emit('update:modelValue', false)
-    },
-    reset() {
-      this.newPassword = ''
-      this.confirmPassword = ''
-      this.localError = ''
-    },
-    submitPassword() {
-      this.localError = ''
-      if (this.newPassword.length < 6) {
-        this.localError = 'Heslo musí mať aspoň 6 znakov'
-        return
-      }
-      if (this.newPassword !== this.confirmPassword) {
-        this.localError = 'Heslá sa nezhodujú'
-        return
-      }
-      this.$emit('submit', this.newPassword)
-    },
-  },
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+
+const props = defineProps<{
+  modelValue?: boolean
+  saving?: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  submit: [password: string]
+}>()
+
+const newPassword = ref('')
+const confirmPassword = ref('')
+const localError = ref('')
+
+watch(() => props.modelValue, (value) => {
+  if (!value) {
+    newPassword.value = ''
+    confirmPassword.value = ''
+    localError.value = ''
+  }
+})
+
+function close() {
+  emit('update:modelValue', false)
+}
+
+function submitPassword() {
+  localError.value = ''
+  if (newPassword.value.length < 6) {
+    localError.value = 'Heslo musí mať aspoň 6 znakov'
+    return
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    localError.value = 'Heslá sa nezhodujú'
+    return
+  }
+  emit('submit', newPassword.value)
 }
 </script>
 

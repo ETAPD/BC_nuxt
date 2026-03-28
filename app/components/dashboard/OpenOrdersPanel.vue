@@ -18,40 +18,40 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { computed } from 'vue'
 
-export default defineComponent({
-  name: 'OpenOrdersPanel',
-  emits: ['edit', 'cancel'],
-  props: {
-    openOrders: { type: Array, default: () => [] },
-    formatCurrency: { type: Function, required: true },
-  },
-  computed: {
-    normalizedOrders(): any[] {
-      return (this.openOrders as any[]).map((order: any) => ({
-        ...order,
-        status: order.status || 'pending',
-        order_side: order.order_side || 'BUY',
-      }))
-    },
-  },
-  methods: {
-    getStatusClass(status: string) {
-      const normalized = String(status || '').toLowerCase()
-      if (normalized === 'filled') return 'status-filled'
-      if (normalized === 'cancelled' || normalized === 'rejected') return 'status-cancelled'
-      if (normalized === 'active') return 'status-active'
-      return 'status-pending'
-    },
-    getOrderMeta(order: any) {
-      if (order.order_type === 'Market') return 'Trhový príkaz'
-      const price = order.limit_price ?? order.stop_price ?? 0
-      return `${order.order_type} @ ${this.formatCurrency(Number(price || 0))}`
-    },
-  },
+const props = defineProps<{
+  openOrders: any[]
+  formatCurrency: (value: number, currency?: string) => string
+}>()
+
+const emit = defineEmits<{
+  edit: [order: any]
+  cancel: [orderId: any]
+}>()
+
+const normalizedOrders = computed(() => {
+  return props.openOrders.map((order: any) => ({
+    ...order,
+    status: order.status || 'pending',
+    order_side: order.order_side || 'BUY',
+  }))
 })
+
+function getStatusClass(status: string) {
+  const normalized = String(status || '').toLowerCase()
+  if (normalized === 'filled') return 'status-filled'
+  if (normalized === 'cancelled' || normalized === 'rejected') return 'status-cancelled'
+  if (normalized === 'active') return 'status-active'
+  return 'status-pending'
+}
+
+function getOrderMeta(order: any) {
+  if (order.order_type === 'Market') return 'Trhový príkaz'
+  const price = order.limit_price ?? order.stop_price ?? 0
+  return `${order.order_type} @ ${props.formatCurrency(Number(price || 0))}`
+}
 </script>
 
 <style>

@@ -42,71 +42,57 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'EditProfileModal',
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    user: {
-      type: Object,
-      default: null,
-    },
-    saveLoading: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['update:modelValue', 'save-profile'],
-  data() {
-    return {
-      form: {
-        full_name: '',
-        initials: '',
-        phone: '',
-      },
-    }
-  },
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(value) {
-        if (value) {
-          this.resetFromUser()
-        }
-      },
-    },
-    user: {
-      deep: true,
-      handler() {
-        if (this.modelValue) {
-          this.resetFromUser()
-        }
-      },
-    },
-  },
-  methods: {
-    resetFromUser() {
-      this.form = {
-        full_name: (this.user && this.user.full_name) || '',
-        initials: (this.user && this.user.initials) || '',
-        phone: (this.user && this.user.phone) || '',
-      }
-    },
-    close() {
-      this.$emit('update:modelValue', false)
-    },
-    emitSave() {
-      if (!this.form.full_name.trim()) return
-      this.$emit('save-profile', {
-        full_name: this.form.full_name,
-        initials: this.form.initials,
-        phone: this.form.phone,
-      })
-    },
-  },
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+
+const props = defineProps<{
+  modelValue?: boolean
+  user?: Record<string, any> | null
+  saveLoading?: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  'save-profile': [data: { full_name: string; initials: string; phone: string }]
+}>()
+
+const form = ref({
+  full_name: '',
+  initials: '',
+  phone: '',
+})
+
+function resetFromUser() {
+  form.value = {
+    full_name: (props.user && props.user.full_name) || '',
+    initials: (props.user && props.user.initials) || '',
+    phone: (props.user && props.user.phone) || '',
+  }
+}
+
+watch(() => props.modelValue, (value) => {
+  if (value) {
+    resetFromUser()
+  }
+}, { immediate: true })
+
+watch(() => props.user, () => {
+  if (props.modelValue) {
+    resetFromUser()
+  }
+}, { deep: true })
+
+function close() {
+  emit('update:modelValue', false)
+}
+
+function emitSave() {
+  if (!form.value.full_name.trim()) return
+  emit('save-profile', {
+    full_name: form.value.full_name,
+    initials: form.value.initials,
+    phone: form.value.phone,
+  })
 }
 </script>
 

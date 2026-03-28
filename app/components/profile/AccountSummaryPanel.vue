@@ -40,45 +40,23 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'AccountSummaryPanel',
-  props: {
-    user: {
-      type: Object,
-      default: null,
-    },
-    portfolioCount: {
-      type: Number,
-      default: 0,
-    },
-    openOrdersCount: {
-      type: Number,
-      default: 0,
-    },
-    completedTradesCount: {
-      type: Number,
-      default: 0,
-    },
-    watchlistCount: {
-      type: Number,
-      default: 0,
-    },
-    holdingsCount: {
-      type: Number,
-      default: 0,
-    },
-  },
-  methods: {
-    formatDate(value) {
-      if (!value) return '—'
-      return new Date(value).toLocaleDateString('sk-SK', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    },
-  },
+<script setup lang="ts">
+defineProps<{
+  user?: Record<string, any> | null
+  portfolioCount?: number
+  openOrdersCount?: number
+  completedTradesCount?: number
+  watchlistCount?: number
+  holdingsCount?: number
+}>()
+
+function formatDate(value: string | undefined | null) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('sk-SK', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 }
 </script>
 

@@ -40,28 +40,19 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
+const props = defineProps<{
+  holdings: any[]
+}>()
 
-export default defineComponent({
-  name: 'HoldingsPanel',
-  props: {
-    holdings: {
-      type: Array as PropType<any[]>,
-      required: true,
-    },
-  },
-  methods: {
-    formatCurrency(value: number, currency = 'USD') {
-      if (value == null) return (0).toLocaleString('en-US', { style: 'currency', currency })
-      try {
-        return value.toLocaleString('en-US', { style: 'currency', currency })
-      } catch {
-        return String(value)
-      }
-    },
-  },
-})
+function formatCurrency(value: number, currency = 'USD') {
+  if (value == null) return (0).toLocaleString('en-US', { style: 'currency', currency })
+  try {
+    return value.toLocaleString('en-US', { style: 'currency', currency })
+  } catch {
+    return String(value)
+  }
+}
 </script>
 
 <style scoped>

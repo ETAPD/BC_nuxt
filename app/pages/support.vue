@@ -124,130 +124,125 @@
   </div>
 </template>
 
-<script lang="ts">
-import { mapWritableState } from "pinia";
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { storeToRefs } from 'pinia'
+import { createTicket } from '../composables/useSupportTickets'
 
-export default defineComponent({
-  name: "SupportView",
-  data() {
-    return {
-      isLoggedIn: false,
-      user: null as any,
-      submitLoading: false,
-      successMsg: "",
-      errorMsg: "",
-      successTimer: null as ReturnType<typeof setTimeout> | null,
-      subjectOptions: [
-        "Problém s príkazom",
-        "Problém s vkladom / výberom",
-        "Problém s prihlásením",
-        "Otázka k portfóliu",
-        "Zmena osobných údajov",
-        "Technický problém",
-        "Nahlásenie chyby",
-      ],
-      faqs: [
-        {
-          question: "Ako vytvorím nový príkaz?",
-          answer:
-            'Prejdite na Dashboard, vyberte aktívum na paneli "Nový príkaz", zvoľte typ (tržový, limitný alebo stop-loss), zadajte množstvo a potvrďte odoslanie.',
-        },
-        {
-          question: "Ako zmením heslo?",
-          answer:
-            'Prejdite do Profilu a v sekcii "Zabezpečenie" kliknite na "Zmeniť heslo". Zadajte nové heslo a potvrďte.',
-        },
-        {
-          question: "Kde nájdem históriu obchodov?",
-          answer:
-            'Kompletná história obchodov je dostupná v sekcii "História" v navigačnom paneli.',
-        },
-        {
-          question: "Ako pridám platobný spôsob?",
-          answer:
-            'V Profile nájdete sekciu "Platobné metódy", kde môžete pridať bankový účet alebo kartu.',
-        },
-        {
-          question: "Ako kontaktujem podporu?",
-          answer:
-            'Môžete použiť formulár nižšie na tejto stránke, alebo napísať tiket priamo z profilu v sekcii "Podpora".',
-        },
-        {
-          question: "Čo znamenajú stavy príkazov?",
-          answer:
-            "Čakajúci – príkaz čaká na spracovanie. Aktívny – príkaz je na trhu. Vyplnený – príkaz bol úspešne vykonaný. Zrušený/Zamietnutý – príkaz bol zrušený alebo zamietnutý.",
-        },
-        {
-          question: "Ako zruším príkaz?",
-          answer:
-            'Na Dashboarde v sekcii "Otvorené príkazy" nájdete aktívne príkazy. Kliknite na "Zrušiť" pri príkaze, ktorý chcete zrušiť.',
-        },
-        {
-          question: "Aké typy členstva sú dostupné?",
-          answer:
-            "Ponúkame Basic, Pro a Premium členstvo. Každá úroveň ponúka rôzne výhody, ako nižšie poplatky a rozšírené analytiky.",
-        },
-      ],
-    };
+const store = useSupportFormStore()
+const { activeTab, selectedSubject, customSubject, message } = storeToRefs(store)
+
+const isLoggedIn = ref(false)
+const user = ref<any>(null)
+const submitLoading = ref(false)
+const successMsg = ref("")
+const errorMsg = ref("")
+const successTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+
+const subjectOptions = [
+  "Problém s príkazom",
+  "Problém s vkladom / výberom",
+  "Problém s prihlásením",
+  "Otázka k portfóliu",
+  "Zmena osobných údajov",
+  "Technický problém",
+  "Nahlásenie chyby",
+]
+
+const faqs = [
+  {
+    question: "Ako vytvorím nový príkaz?",
+    answer:
+      'Prejdite na Dashboard, vyberte aktívum na paneli "Nový príkaz", zvoľte typ (tržový, limitný alebo stop-loss), zadajte množstvo a potvrďte odoslanie.',
   },
-  computed: {
-    ...mapWritableState(useSupportFormStore, [
-      "activeTab",
-      "selectedSubject",
-      "customSubject",
-      "message",
-    ]),
-    finalSubject() {
-      return this.selectedSubject === "__other"
-        ? this.customSubject.trim()
-        : this.selectedSubject;
-    },
-    isFormValid() {
-      return this.finalSubject.length > 0 && this.message.trim().length > 0;
-    },
+  {
+    question: "Ako zmením heslo?",
+    answer:
+      'Prejdite do Profilu a v sekcii "Zabezpečenie" kliknite na "Zmeniť heslo". Zadajte nové heslo a potvrďte.',
   },
-  async mounted() {
-    try {
-      const user = await getDbUser();
-      if (user) {
-        this.user = user;
-        this.isLoggedIn = true;
-      }
-    } catch {
-      // not logged in
+  {
+    question: "Kde nájdem históriu obchodov?",
+    answer:
+      'Kompletná história obchodov je dostupná v sekcii "História" v navigačnom paneli.',
+  },
+  {
+    question: "Ako pridám platobný spôsob?",
+    answer:
+      'V Profile nájdete sekciu "Platobné metódy", kde môžete pridať bankový účet alebo kartu.',
+  },
+  {
+    question: "Ako kontaktujem podporu?",
+    answer:
+      'Môžete použiť formulár nižšie na tejto stránke, alebo napísať tiket priamo z profilu v sekcii "Podpora".',
+  },
+  {
+    question: "Čo znamenajú stavy príkazov?",
+    answer:
+      "Čakajúci – príkaz čaká na spracovanie. Aktívny – príkaz je na trhu. Vyplnený – príkaz bol úspešne vykonaný. Zrušený/Zamietnutý – príkaz bol zrušený alebo zamietnutý.",
+  },
+  {
+    question: "Ako zruším príkaz?",
+    answer:
+      'Na Dashboarde v sekcii "Otvorené príkazy" nájdete aktívne príkazy. Kliknite na "Zrušiť" pri príkaze, ktorý chcete zrušiť.',
+  },
+  {
+    question: "Aké typy členstva sú dostupné?",
+    answer:
+      "Ponúkame Basic, Pro a Premium členstvo. Každá úroveň ponúka rôzne výhody, ako nižšie poplatky a rozšírené analytiky.",
+  },
+]
+
+const finalSubject = computed(() => {
+  return selectedSubject.value === "__other"
+    ? customSubject.value.trim()
+    : selectedSubject.value
+})
+
+const isFormValid = computed(() => {
+  return finalSubject.value.length > 0 && message.value.trim().length > 0
+})
+
+onMounted(async () => {
+  try {
+    const userData = await getDbUser()
+    if (userData) {
+      user.value = userData
+      isLoggedIn.value = true
     }
-  },
-  beforeUnmount() {
-    if (this.successTimer) clearTimeout(this.successTimer);
-  },
-  methods: {
-    async submitTicket() {
-      if (!this.isFormValid || !this.user) return;
-      this.submitLoading = true;
-      this.errorMsg = "";
-      this.successMsg = "";
-      try {
-        await createTicket(
-          this.user.user_id,
-          this.finalSubject,
-          this.message.trim(),
-          this.user.full_name || "Používateľ",
-        );
-        this.successMsg = "Tiket bol úspešne odoslaný. Čoskoro sa vám ozveme.";
-        this.selectedSubject = "";
-        this.customSubject = "";
-        this.message = "";
-        this.successTimer = setTimeout(() => {
-          this.successMsg = "";
-        }, 5000);
-      } catch (err: any) {
-        this.errorMsg = err?.message || "Nepodarilo sa odoslať tiket.";
-      } finally {
-        this.submitLoading = false;
-      }
-    },
-  },
-});
+  } catch {
+    // not logged in
+  }
+})
+
+onBeforeUnmount(() => {
+  if (successTimer.value) clearTimeout(successTimer.value)
+})
+
+async function submitTicket() {
+  if (!isFormValid.value || !user.value) return
+  submitLoading.value = true
+  errorMsg.value = ""
+  successMsg.value = ""
+  try {
+    await createTicket(
+      user.value.user_id,
+      finalSubject.value,
+      message.value.trim(),
+      user.value.full_name || "Používateľ",
+    )
+    successMsg.value = "Tiket bol úspešne odoslaný. Čoskoro sa vám ozveme."
+    selectedSubject.value = ""
+    customSubject.value = ""
+    message.value = ""
+    successTimer.value = setTimeout(() => {
+      successMsg.value = ""
+    }, 5000)
+  } catch (err: any) {
+    errorMsg.value = err?.message || "Nepodarilo sa odoslať tiket."
+  } finally {
+    submitLoading.value = false
+  }
+}
 </script>
 
 <style scoped>

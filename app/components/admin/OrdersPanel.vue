@@ -163,83 +163,79 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 
-export default defineComponent({
-  name: 'OrdersPanel',
-  emits: ['change-status'],
-  props: {
-    orders: {
-      type: Array as PropType<any[]>,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      searchQuery: '',
-      orderFilterStatus: '',
-      orderFilterSide: '',
-      orderFilterType: '',
-    }
-  },
-  computed: {
-    filteredOrders(): any[] {
-      let list = [...this.orders]
-      const q = this.searchQuery.trim().toLowerCase()
-      if (q) {
-        list = list.filter((order: any) => {
-          return (
-            order.symbol?.toLowerCase().includes(q) ||
-            order.status?.toLowerCase().includes(q) ||
-            order.portfolios?.name?.toLowerCase().includes(q) ||
-            order.portfolios?.users?.full_name?.toLowerCase().includes(q) ||
-            String(order.portfolio_id).includes(q)
-          )
-        })
-      }
-      if (this.orderFilterStatus)
-        list = list.filter((order: any) => order.status === this.orderFilterStatus)
-      if (this.orderFilterSide)
-        list = list.filter((order: any) => order.order_side?.toLowerCase() === this.orderFilterSide)
-      if (this.orderFilterType)
-        list = list.filter((order: any) => order.order_type?.toLowerCase() === this.orderFilterType)
-      return list
-    },
-  },
-  methods: {
-    formatCurrency(value: number, currency = 'USD') {
-      if (value == null) return (0).toLocaleString('en-US', { style: 'currency', currency })
-      try {
-        return value.toLocaleString('en-US', { style: 'currency', currency })
-      } catch {
-        return String(value)
-      }
-    },
-    formatAmount(value: number, unit?: string) {
-      if (value == null) return '0'
-      const formatted = value.toLocaleString('en-US', { maximumFractionDigits: 8 })
-      return unit ? `${formatted} ${unit}` : formatted
-    },
-    formatDateTwoLine(value: string) {
-      if (!value) return { date: '—', time: '' }
-      const date = new Date(value)
-      return {
-        date: date.toLocaleDateString('sk-SK', { year: 'numeric', month: 'short', day: 'numeric' }),
-        time: date.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }),
-      }
-    },
-    orderPriceDisplay(order: any) {
-      if (order.order_type?.toLowerCase() === 'market') return 'Tržový'
-      return this.formatCurrency(order.limit_price ?? order.stop_price ?? 0)
-    },
-    orderPortfolioDisplay(order: any) {
-      const name = order.portfolios?.name || `#${order.portfolio_id}`
-      const owner = order.portfolios?.users?.full_name || ''
-      return { name, owner }
-    },
-  },
+const props = defineProps<{
+  orders: any[]
+}>()
+
+const emit = defineEmits<{
+  'change-status': [orderId: any, status: string]
+}>()
+
+const searchQuery = ref('')
+const orderFilterStatus = ref('')
+const orderFilterSide = ref('')
+const orderFilterType = ref('')
+
+const filteredOrders = computed(() => {
+  let list = [...props.orders]
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) {
+    list = list.filter((order: any) => {
+      return (
+        order.symbol?.toLowerCase().includes(q) ||
+        order.status?.toLowerCase().includes(q) ||
+        order.portfolios?.name?.toLowerCase().includes(q) ||
+        order.portfolios?.users?.full_name?.toLowerCase().includes(q) ||
+        String(order.portfolio_id).includes(q)
+      )
+    })
+  }
+  if (orderFilterStatus.value)
+    list = list.filter((order: any) => order.status === orderFilterStatus.value)
+  if (orderFilterSide.value)
+    list = list.filter((order: any) => order.order_side?.toLowerCase() === orderFilterSide.value)
+  if (orderFilterType.value)
+    list = list.filter((order: any) => order.order_type?.toLowerCase() === orderFilterType.value)
+  return list
 })
+
+function formatCurrency(value: number, currency = 'USD') {
+  if (value == null) return (0).toLocaleString('en-US', { style: 'currency', currency })
+  try {
+    return value.toLocaleString('en-US', { style: 'currency', currency })
+  } catch {
+    return String(value)
+  }
+}
+
+function formatAmount(value: number, unit?: string) {
+  if (value == null) return '0'
+  const formatted = value.toLocaleString('en-US', { maximumFractionDigits: 8 })
+  return unit ? `${formatted} ${unit}` : formatted
+}
+
+function formatDateTwoLine(value: string) {
+  if (!value) return { date: '—', time: '' }
+  const date = new Date(value)
+  return {
+    date: date.toLocaleDateString('sk-SK', { year: 'numeric', month: 'short', day: 'numeric' }),
+    time: date.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }),
+  }
+}
+
+function orderPriceDisplay(order: any) {
+  if (order.order_type?.toLowerCase() === 'market') return 'Tržový'
+  return formatCurrency(order.limit_price ?? order.stop_price ?? 0)
+}
+
+function orderPortfolioDisplay(order: any) {
+  const name = order.portfolios?.name || `#${order.portfolio_id}`
+  const owner = order.portfolios?.users?.full_name || ''
+  return { name, owner }
+}
 </script>
 
 <style scoped>

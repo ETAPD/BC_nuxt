@@ -38,31 +38,25 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
+const props = defineProps<{
+  messages: any[]
+}>()
 
-export default defineComponent({
-  name: 'MessagesPanel',
-  emits: ['delete-message'],
-  props: {
-    messages: {
-      type: Array as PropType<any[]>,
-      required: true,
-    },
-  },
-  methods: {
-    formatDate(value: string) {
-      if (!value) return '—'
-      return new Date(value).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    },
-  },
-})
+const emit = defineEmits<{
+  'delete-message': [id: any]
+}>()
+
+function formatDate(value: string) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 </script>
 
 <style scoped>

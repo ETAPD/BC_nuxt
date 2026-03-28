@@ -34,63 +34,59 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 
-export default defineComponent({
-  name: 'OrderEditModal',
-  emits: ['close', 'save'],
-  props: {
-    editingOrder: { type: Object, default: null },
-    saving: { type: Boolean, default: false },
-  },
-  data() {
-    return {
-      editForm: {
-        amount: '',
-        price: '',
-      },
-    }
-  },
-  computed: {
-    validationError(): string {
-      const amount = Number(this.editForm.amount) || 0
-      const price = Number(this.editForm.price) || 0
-      if (!this.editingOrder) return ''
-      if (amount <= 0) return 'Množstvo musí byť väčšie ako 0'
-      if (this.editingOrder.order_type !== 'Market' && price <= 0) return 'Cena musí byť väčšia ako 0'
-      return ''
-    },
-  },
-  watch: {
-    editingOrder: {
-      immediate: true,
-      handler(order: any) {
-        if (!order) {
-          this.editForm.amount = ''
-          this.editForm.price = ''
-          return
-        }
-        this.editForm.amount = String(order.amount ?? '')
-        this.editForm.price = String(order.limit_price ?? order.stop_price ?? '')
-      },
-    },
-  },
-  methods: {
-    emitSave() {
-      if (!this.editingOrder || this.validationError) return
-      const updates: Record<string, any> = {
-        amount: Number(this.editForm.amount),
-      }
-      if (this.editingOrder.order_type === 'Limit') updates.limit_price = Number(this.editForm.price)
-      if (this.editingOrder.order_type === 'Stop') updates.stop_price = Number(this.editForm.price)
-      this.$emit('save', {
-        orderId: this.editingOrder.order_id,
-        updates,
-      })
-    },
-  },
+const props = defineProps<{
+  editingOrder: any | null
+  saving?: boolean
+}>()
+
+const emit = defineEmits<{
+  close: []
+  save: [payload: { orderId: any; updates: Record<string, any> }]
+}>()
+
+const editForm = ref({
+  amount: '',
+  price: '',
 })
+
+const validationError = computed(() => {
+  const amount = Number(editForm.value.amount) || 0
+  const price = Number(editForm.value.price) || 0
+  if (!props.editingOrder) return ''
+  if (amount <= 0) return 'Množstvo musí byť väčšie ako 0'
+  if (props.editingOrder.order_type !== 'Market' && price <= 0) return 'Cena musí byť väčšia ako 0'
+  return ''
+})
+
+watch(
+  () => props.editingOrder,
+  (order) => {
+    if (!order) {
+      editForm.value.amount = ''
+      editForm.value.price = ''
+      return
+    }
+    editForm.value.amount = String(order.amount ?? '')
+    editForm.value.price = String(order.limit_price ?? order.stop_price ?? '')
+  },
+  { immediate: true }
+)
+
+function emitSave() {
+  if (!props.editingOrder || validationError.value) return
+  const updates: Record<string, any> = {
+    amount: Number(editForm.value.amount),
+  }
+  if (props.editingOrder.order_type === 'Limit') updates.limit_price = Number(editForm.value.price)
+  if (props.editingOrder.order_type === 'Stop') updates.stop_price = Number(editForm.value.price)
+  emit('save', {
+    orderId: props.editingOrder.order_id,
+    updates,
+  })
+}
 </script>
 
 <style>

@@ -37,11 +37,13 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'SecurityPanel',
-  emits: ['open-password', 'export', 'logout', 'open-delete'],
-}
+<script setup lang="ts">
+defineEmits<{
+  'open-password': []
+  export: []
+  logout: []
+  'open-delete': []
+}>()
 </script>
 
 <style scoped>

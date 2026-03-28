@@ -22,46 +22,36 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'DeleteAccountModal',
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    saving: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['update:modelValue', 'confirm-delete'],
-  data() {
-    return {
-      deleteConfirm: '',
-    }
-  },
-  computed: {
-    canDelete() {
-      return this.deleteConfirm === 'DELETE'
-    },
-  },
-  watch: {
-    modelValue(value) {
-      if (!value) {
-        this.deleteConfirm = ''
-      }
-    },
-  },
-  methods: {
-    close() {
-      this.$emit('update:modelValue', false)
-    },
-    emitDelete() {
-      if (!this.canDelete) return
-      this.$emit('confirm-delete')
-    },
-  },
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+
+const props = defineProps<{
+  modelValue?: boolean
+  saving?: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  'confirm-delete': []
+}>()
+
+const deleteConfirm = ref('')
+
+const canDelete = computed(() => deleteConfirm.value === 'DELETE')
+
+watch(() => props.modelValue, (value) => {
+  if (!value) {
+    deleteConfirm.value = ''
+  }
+})
+
+function close() {
+  emit('update:modelValue', false)
+}
+
+function emitDelete() {
+  if (!canDelete.value) return
+  emit('confirm-delete')
 }
 </script>
 

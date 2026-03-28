@@ -125,178 +125,181 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 
 type OrderSide = 'BUY' | 'SELL'
 type OrderType = 'Market' | 'Limit' | 'Stop'
 type TimeInForce = 'Day' | 'GTC'
 
-export default defineComponent({
-  name: 'OrderPanel',
-  emits: ['submit-order'],
-  props: {
-    assets: { type: Array, default: () => [] },
-    holdings: { type: Array, default: () => [] },
-    availableCash: { type: Number, default: 0 },
-    userLimits: { type: Object, default: () => ({}) },
-    submitting: { type: Boolean, default: false },
-    submitError: { type: String, default: '' },
-    submitSuccess: { type: Boolean, default: false },
-    formatCurrency: { type: Function, required: true },
-  },
-  data() {
-    return {
-      orderTab: 'BUY' as OrderSide,
-      orderType: 'Market' as OrderType,
-      timeInForce: 'Day' as TimeInForce,
-      showConfirm: false,
-      orderForm: {
-        asset_id: 0,
-        symbol: '',
-        amount: '',
-        price: '',
-      },
-    }
-  },
-  computed: {
-    orderAssetOptions(): any[] {
-      if (this.orderTab === 'SELL') {
-        return (this.assets as any[]).filter((asset: any) =>
-          (this.holdings as any[]).some((holding: any) => holding.asset_id === asset.asset_id),
-        )
-      }
-      return this.assets as any[]
-    },
-    selectedAsset(): any | undefined {
-      return (this.assets as any[]).find((asset: any) => asset.asset_id === this.orderForm.asset_id)
-    },
-    currentMarketPrice(): number {
-      return Number(this.selectedAsset?.base_price ?? 0)
-    },
-    quantityUnit(): string {
-      const asset = this.selectedAsset
-      if (!asset) return 'jednotiek'
-      const type = String(asset.asset_type || '').toLowerCase()
-      if (type === 'crypto') return asset.symbol
-      if (type === 'stock' || type === 'etf') return 'akcií'
-      if (type === 'forex') return 'lotov'
-      return 'jednotiek'
-    },
-    numericAmount(): number {
-      return Number(this.orderForm.amount) || 0
-    },
-    numericPrice(): number {
-      return Number(this.orderForm.price) || 0
-    },
-    effectivePrice(): number {
-      return this.orderType === 'Market' ? this.currentMarketPrice : this.numericPrice
-    },
-    totalOrderValue(): number {
-      return this.numericAmount * this.effectivePrice
-    },
-    estimatedFee(): number {
-      return this.totalOrderValue * 0.001
-    },
-    holdingForAsset(): any | undefined {
-      return (this.holdings as any[]).find((holding: any) => holding.asset_id === this.orderForm.asset_id)
-    },
-    validationError(): string {
-      if (!this.orderForm.asset_id) return 'Vyberte aktívum'
-      if (this.numericAmount <= 0) return 'Množstvo musí byť väčšie ako 0'
-      if (this.orderType !== 'Market' && this.numericPrice <= 0) return 'Cena musí byť väčšia ako 0'
-      if (this.orderType === 'Stop' && !this.userLimits?.can_use_stop_orders) return 'Stop príkazy vyžadujú plán Pro alebo Premium'
-      if (this.orderTab === 'SELL') {
-        const owned = Number(this.holdingForAsset?.amount ?? 0)
-        if (!owned) return 'Nevlastníte toto aktívum'
-        if (this.numericAmount > owned) return `Vlastníte len ${owned} ${this.quantityUnit}`
-      }
-      if (this.orderTab === 'BUY') {
-        const cost = this.totalOrderValue + this.estimatedFee
-        if (cost > this.availableCash) return `Nedostatočný zostatok (${this.formatCurrency(this.availableCash)} k dispozícii)`
-      }
-      return ''
-    },
-    isSubmitDisabled(): boolean {
-      return !!this.validationError || (this.orderTab === 'SELL' && !this.orderAssetOptions.length)
-    },
-  },
-  watch: {
-    assets: {
-      immediate: true,
-      handler() {
-        this.ensureValidSelectedAsset()
-      },
-    },
-    holdings() {
-      this.ensureValidSelectedAsset()
-    },
-    submitSuccess(value: boolean) {
-      if (value) {
-        this.orderForm.amount = ''
-        this.orderForm.price = ''
-        this.showConfirm = false
-      }
-    },
-    orderType(value: OrderType) {
-      if (value === 'Market') this.orderForm.price = ''
-    },
-  },
-  methods: {
-    ensureValidSelectedAsset() {
-      const options = this.orderAssetOptions
-      if (!options.length) {
-        this.orderForm.asset_id = 0
-        this.orderForm.symbol = ''
-        return
-      }
-      const selectedExists = options.some((asset: any) => asset.asset_id === this.orderForm.asset_id)
-      if (!selectedExists) this.applyAsset(options[0].asset_id)
-    },
-    applyAsset(assetId: number) {
-      const asset = (this.assets as any[]).find((item: any) => item.asset_id === Number(assetId))
-      if (!asset) return
-      this.orderForm.asset_id = asset.asset_id
-      this.orderForm.symbol = asset.symbol
-    },
-    setOrderTab(value: OrderSide) {
-      this.orderTab = value
-      this.ensureValidSelectedAsset()
-    },
-    setOrderType(value: OrderType) {
-      this.orderType = value
-    },
-    onAssetChange(event: Event) {
-      const value = Number((event.target as HTMLSelectElement | null)?.value ?? 0)
-      this.applyAsset(value)
-    },
-    requestOrder() {
-      if (this.validationError || this.submitting) return
-      this.showConfirm = true
-    },
-    closeConfirm() {
-      this.showConfirm = false
-    },
-    confirmOrder() {
-      if (this.validationError || this.submitting) return
-      this.$emit('submit-order', {
-        asset_id: this.orderForm.asset_id,
-        symbol: this.orderForm.symbol,
-        order_side: this.orderTab,
-        order_type: this.orderType,
-        limit_price: this.orderType === 'Limit' ? this.numericPrice : null,
-        stop_price: this.orderType === 'Stop' ? this.numericPrice : null,
-        amount: this.numericAmount,
-        amount_unit: this.quantityUnit,
-        time_in_force: this.timeInForce,
-      })
-    },
-    formatPercent(value: number) {
-      const numeric = Number(value || 0)
-      return `${numeric >= 0 ? '+' : ''}${numeric.toFixed(4)}%`
-    },
-  },
+const props = defineProps<{
+  assets: any[]
+  holdings: any[]
+  availableCash: number
+  userLimits: any
+  submitting: boolean
+  submitError: string
+  submitSuccess: boolean
+  formatCurrency: (value: number, currency?: string) => string
+}>()
+
+const emit = defineEmits<{
+  'submit-order': [order: any]
+}>()
+
+const orderTab = ref<OrderSide>('BUY')
+const orderType = ref<OrderType>('Market')
+const timeInForce = ref<TimeInForce>('Day')
+const showConfirm = ref(false)
+const orderForm = ref({
+  asset_id: 0,
+  symbol: '',
+  amount: '',
+  price: '',
 })
+
+const orderAssetOptions = computed(() => {
+  if (orderTab.value === 'SELL') {
+    return props.assets.filter((asset: any) =>
+      props.holdings.some((holding: any) => holding.asset_id === asset.asset_id),
+    )
+  }
+  return props.assets
+})
+
+const selectedAsset = computed(() => {
+  return props.assets.find((asset: any) => asset.asset_id === orderForm.value.asset_id)
+})
+
+const currentMarketPrice = computed(() => Number(selectedAsset.value?.base_price ?? 0))
+
+const quantityUnit = computed(() => {
+  const asset = selectedAsset.value
+  if (!asset) return 'jednotiek'
+  const type = String(asset.asset_type || '').toLowerCase()
+  if (type === 'crypto') return asset.symbol
+  if (type === 'stock' || type === 'etf') return 'akcií'
+  if (type === 'forex') return 'lotov'
+  return 'jednotiek'
+})
+
+const numericAmount = computed(() => Number(orderForm.value.amount) || 0)
+const numericPrice = computed(() => Number(orderForm.value.price) || 0)
+const effectivePrice = computed(() => orderType.value === 'Market' ? currentMarketPrice.value : numericPrice.value)
+const totalOrderValue = computed(() => numericAmount.value * effectivePrice.value)
+const estimatedFee = computed(() => totalOrderValue.value * 0.001)
+
+const holdingForAsset = computed(() => {
+  return props.holdings.find((holding: any) => holding.asset_id === orderForm.value.asset_id)
+})
+
+const validationError = computed(() => {
+  if (!orderForm.value.asset_id) return 'Vyberte aktívum'
+  if (numericAmount.value <= 0) return 'Množstvo musí byť väčšie ako 0'
+  if (orderType.value !== 'Market' && numericPrice.value <= 0) return 'Cena musí byť väčšia ako 0'
+  if (orderType.value === 'Stop' && !props.userLimits?.can_use_stop_orders) return 'Stop príkazy vyžadujú plán Pro alebo Premium'
+  if (orderTab.value === 'SELL') {
+    const owned = Number(holdingForAsset.value?.amount ?? 0)
+    if (!owned) return 'Nevlastníte toto aktívum'
+    if (numericAmount.value > owned) return `Vlastníte len ${owned} ${quantityUnit.value}`
+  }
+  if (orderTab.value === 'BUY') {
+    const cost = totalOrderValue.value + estimatedFee.value
+    if (cost > props.availableCash) return `Nedostatočný zostatok (${props.formatCurrency(props.availableCash)} k dispozícii)`
+  }
+  return ''
+})
+
+const isSubmitDisabled = computed(() => {
+  return !!validationError.value || (orderTab.value === 'SELL' && !orderAssetOptions.value.length)
+})
+
+watch(
+  () => props.assets,
+  () => ensureValidSelectedAsset(),
+  { immediate: true }
+)
+
+watch(
+  () => props.holdings,
+  () => ensureValidSelectedAsset()
+)
+
+watch(
+  () => props.submitSuccess,
+  (value) => {
+    if (value) {
+      orderForm.value.amount = ''
+      orderForm.value.price = ''
+      showConfirm.value = false
+    }
+  }
+)
+
+watch(orderType, (value) => {
+  if (value === 'Market') orderForm.value.price = ''
+})
+
+function ensureValidSelectedAsset() {
+  const options = orderAssetOptions.value
+  if (!options.length) {
+    orderForm.value.asset_id = 0
+    orderForm.value.symbol = ''
+    return
+  }
+  const selectedExists = options.some((asset: any) => asset.asset_id === orderForm.value.asset_id)
+  if (!selectedExists) applyAsset(options[0].asset_id)
+}
+
+function applyAsset(assetId: number) {
+  const asset = props.assets.find((item: any) => item.asset_id === Number(assetId))
+  if (!asset) return
+  orderForm.value.asset_id = asset.asset_id
+  orderForm.value.symbol = asset.symbol
+}
+
+function setOrderTab(value: OrderSide) {
+  orderTab.value = value
+  ensureValidSelectedAsset()
+}
+
+function setOrderType(value: OrderType) {
+  orderType.value = value
+}
+
+function onAssetChange(event: Event) {
+  const value = Number((event.target as HTMLSelectElement | null)?.value ?? 0)
+  applyAsset(value)
+}
+
+function requestOrder() {
+  if (validationError.value || props.submitting) return
+  showConfirm.value = true
+}
+
+function closeConfirm() {
+  showConfirm.value = false
+}
+
+function confirmOrder() {
+  if (validationError.value || props.submitting) return
+  emit('submit-order', {
+    asset_id: orderForm.value.asset_id,
+    symbol: orderForm.value.symbol,
+    order_side: orderTab.value,
+    order_type: orderType.value,
+    limit_price: orderType.value === 'Limit' ? numericPrice.value : null,
+    stop_price: orderType.value === 'Stop' ? numericPrice.value : null,
+    amount: numericAmount.value,
+    amount_unit: quantityUnit.value,
+    time_in_force: timeInForce.value,
+  })
+}
+
+function formatPercent(value: number) {
+  const numeric = Number(value || 0)
+  return `${numeric >= 0 ? '+' : ''}${numeric.toFixed(4)}%`
+}
 </script>
 
 <style>

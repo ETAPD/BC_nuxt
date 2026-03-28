@@ -30,45 +30,20 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'PortfolioSummaryPanel',
-  props: {
-    holdingsTotal: {
-      type: Number,
-      default: 0,
-    },
-    investedAmount: {
-      type: Number,
-      default: 0,
-    },
-    availableCash: {
-      type: Number,
-      default: 0,
-    },
-    dayChange: {
-      type: Number,
-      default: 0,
-    },
-    dayChangePct: {
-      type: [Number, String],
-      default: 0,
-    },
-    totalPnL: {
-      type: Number,
-      default: 0,
-    },
-    totalPnLPct: {
-      type: [Number, String],
-      default: 0,
-    },
-  },
-  methods: {
-    formatCurrency(value) {
-      if (value == null) return '$0.00'
-      return Number(value).toLocaleString('sk-SK', { style: 'currency', currency: 'USD' })
-    },
-  },
+<script setup lang="ts">
+defineProps<{
+  holdingsTotal?: number
+  investedAmount?: number
+  availableCash?: number
+  dayChange?: number
+  dayChangePct?: number | string
+  totalPnL?: number
+  totalPnLPct?: number | string
+}>()
+
+function formatCurrency(value: number | null | undefined) {
+  if (value == null) return '$0.00'
+  return Number(value).toLocaleString('sk-SK', { style: 'currency', currency: 'USD' })
 }
 </script>
 

@@ -63,63 +63,61 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import type { PropType } from 'vue'
+<script setup lang="ts">
+import { ref, watch, onMounted, nextTick, useTemplateRef } from 'vue'
 
-export default defineComponent({
-  name: 'TicketChat',
-  emits: ['back', 'send', 'close-ticket', 'reopen-ticket'],
-  props: {
-    ticket: { type: Object as PropType<any>, required: true },
-    messages: { type: Array as PropType<any[]>, required: true },
-    loading: { type: Boolean, default: false },
-    senderRole: { type: String as PropType<'user' | 'admin'>, required: true },
-    showBack: { type: Boolean, default: true },
-  },
-  data() {
-    return {
-      newMessage: '',
-      sending: false,
-    }
-  },
-  watch: {
-    messages: {
-      handler() {
-        this.$nextTick(() => this.scrollToBottom())
-      },
-      deep: true,
-    },
-  },
-  mounted() {
-    this.scrollToBottom()
-  },
-  methods: {
-    scrollToBottom() {
-      const el = this.$refs.messagesContainer as HTMLElement | undefined
-      if (el) el.scrollTop = el.scrollHeight
-    },
-    formatTime(value: string) {
-      if (!value) return '—'
-      return new Date(value).toLocaleDateString('sk-SK', {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    },
-    async handleSend() {
-      const body = this.newMessage.trim()
-      if (!body) return
-      this.sending = true
-      try {
-        this.$emit('send', body)
-        this.newMessage = ''
-      } finally {
-        this.sending = false
-      }
-    },
-  },
+const props = defineProps<{
+  ticket: any
+  messages: any[]
+  loading?: boolean
+  senderRole: 'user' | 'admin'
+  showBack?: boolean
+}>()
+
+const emit = defineEmits<{
+  back: []
+  send: [body: string]
+  'close-ticket': []
+  'reopen-ticket': []
+}>()
+
+const newMessage = ref('')
+const sending = ref(false)
+const messagesContainer = useTemplateRef<HTMLElement>('messagesContainer')
+
+function scrollToBottom() {
+  const el = messagesContainer.value
+  if (el) el.scrollTop = el.scrollHeight
+}
+
+function formatTime(value: string) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('sk-SK', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+async function handleSend() {
+  const body = newMessage.value.trim()
+  if (!body) return
+  sending.value = true
+  try {
+    emit('send', body)
+    newMessage.value = ''
+  } finally {
+    sending.value = false
+  }
+}
+
+watch(() => props.messages, () => {
+  nextTick(() => scrollToBottom())
+}, { deep: true })
+
+onMounted(() => {
+  scrollToBottom()
 })
 </script>
 

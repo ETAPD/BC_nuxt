@@ -63,64 +63,50 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'NotificationsPanel',
-  props: {
-    prefsData: {
-      type: Object,
-      default() {
-        return {
-          notify_price_alerts: true,
-          notify_order_filled: true,
-          notify_order_cancelled: true,
-          notify_security: true,
-        }
-      },
-    },
-    saving: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['save'],
-  data() {
-    return {
-      localPrefs: this.clonePrefs(this.prefsData),
-      originalPrefs: this.clonePrefs(this.prefsData),
-    }
-  },
-  computed: {
-    changed() {
-      return JSON.stringify(this.localPrefs) !== JSON.stringify(this.originalPrefs)
-    },
-  },
-  watch: {
-    prefsData: {
-      immediate: true,
-      deep: true,
-      handler(value) {
-        this.localPrefs = this.clonePrefs(value)
-        this.originalPrefs = this.clonePrefs(value)
-      },
-    },
-  },
-  methods: {
-    clonePrefs(value) {
-      return {
-        notify_price_alerts: value && typeof value.notify_price_alerts !== 'undefined' ? value.notify_price_alerts : true,
-        notify_order_filled: value && typeof value.notify_order_filled !== 'undefined' ? value.notify_order_filled : true,
-        notify_order_cancelled: value && typeof value.notify_order_cancelled !== 'undefined' ? value.notify_order_cancelled : true,
-        notify_security: value && typeof value.notify_security !== 'undefined' ? value.notify_security : true,
-      }
-    },
-    discard() {
-      this.localPrefs = this.clonePrefs(this.originalPrefs)
-    },
-    emitSave() {
-      this.$emit('save', this.clonePrefs(this.localPrefs))
-    },
-  },
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+
+const props = defineProps<{
+  prefsData?: {
+    notify_price_alerts?: boolean
+    notify_order_filled?: boolean
+    notify_order_cancelled?: boolean
+    notify_security?: boolean
+  }
+  saving?: boolean
+}>()
+
+const emit = defineEmits<{
+  save: [prefs: any]
+}>()
+
+function clonePrefs(value: any) {
+  return {
+    notify_price_alerts: value && typeof value.notify_price_alerts !== 'undefined' ? value.notify_price_alerts : true,
+    notify_order_filled: value && typeof value.notify_order_filled !== 'undefined' ? value.notify_order_filled : true,
+    notify_order_cancelled: value && typeof value.notify_order_cancelled !== 'undefined' ? value.notify_order_cancelled : true,
+    notify_security: value && typeof value.notify_security !== 'undefined' ? value.notify_security : true,
+  }
+}
+
+const localPrefs = ref(clonePrefs(props.prefsData))
+const originalPrefs = ref(clonePrefs(props.prefsData))
+
+const changed = computed(() => {
+  return JSON.stringify(localPrefs.value) !== JSON.stringify(originalPrefs.value)
+})
+
+watch(() => props.prefsData, (value) => {
+  localPrefs.value = clonePrefs(value)
+  originalPrefs.value = clonePrefs(value)
+}, { immediate: true, deep: true })
+
+function discard() {
+  localPrefs.value = clonePrefs(originalPrefs.value)
+}
+
+function emitSave() {
+  emit('save', clonePrefs(localPrefs.value))
 }
 </script>
 

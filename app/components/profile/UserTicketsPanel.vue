@@ -153,7 +153,8 @@
   </section>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import {
   createTicket,
   getUserTickets,
@@ -165,176 +166,172 @@ import {
 
 const CLOSE_REASON_PREFIX = '__CLOSE_REASON__:'
 
-export default {
-  name: 'UserTicketsPanel',
-  props: {
-    userId: {
-      type: Number,
-      required: true,
-    },
-    userName: {
-      type: String,
-      default: 'User',
-    },
-  },
-  data() {
-    return {
-      loading: true,
-      tickets: [],
-      createOpen: false,
-      createLoading: false,
-      newSubject: '',
-      newMessage: '',
-      chatOpen: false,
-      activeTicket: null,
-      messages: [],
-      messagesLoading: false,
-      sendLoading: false,
-      statusLoading: false,
-      replyText: '',
-    }
-  },
-  computed: {
-    anyTicketModalOpen() {
-      return this.createOpen || this.chatOpen
-    },
-  },
-  watch: {
-    anyTicketModalOpen: {
-      immediate: true,
-      handler(open) {
-        document.body.style.overflow = open ? 'hidden' : ''
-      },
-    },
-  },
-  mounted() {
-    this.loadTickets()
-  },
-  beforeUnmount() {
-    document.body.style.overflow = ''
-  },
-  methods: {
-    normalizedStatus(status) {
-      return status === 'closed' ? 'closed' : 'open'
-    },
-    statusLabel(status) {
-      return this.normalizedStatus(status) === 'closed' ? 'Uzavretý' : 'Otvorený'
-    },
-    statusClass(status) {
-      return this.normalizedStatus(status) === 'closed' ? 'is-closed' : 'is-open'
-    },
-    isCloseReasonMessage(message) {
-      return typeof message?.body === 'string' && message.body.startsWith(CLOSE_REASON_PREFIX)
-    },
-    extractCloseReason(body) {
-      if (typeof body !== 'string') return ''
-      return body.replace(CLOSE_REASON_PREFIX, '').trim()
-    },
-    formatDate(value) {
-      if (!value) return '—'
-      return new Date(value).toLocaleString('sk-SK', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    },
-    async loadTickets() {
-      this.loading = true
-      try {
-        this.tickets = await getUserTickets(this.userId)
-      } finally {
-        this.loading = false
-      }
-    },
-    openCreateModal() {
-      this.createOpen = true
-    },
-    closeCreateModal() {
-      this.createOpen = false
-      this.newSubject = ''
-      this.newMessage = ''
-    },
-    async createNewTicket() {
-      if (!this.newSubject.trim() || !this.newMessage.trim()) return
-      this.createLoading = true
-      try {
-        const ticket = await createTicket(
-          this.userId,
-          this.newSubject.trim(),
-          this.newMessage.trim(),
-          this.userName,
-        )
-        await this.loadTickets()
-        this.closeCreateModal()
-        const opened = this.tickets.find((item) => item.ticket_id === ticket.ticket_id) || ticket
-        await this.openChat(opened)
-      } finally {
-        this.createLoading = false
-      }
-    },
-    async openChat(ticket) {
-      this.activeTicket = { ...ticket }
-      this.chatOpen = true
-      this.replyText = ''
-      this.messagesLoading = true
-      try {
-        this.messages = await getTicketMessages(ticket.ticket_id)
-      } finally {
-        this.messagesLoading = false
-      }
-    },
-    closeChat() {
-      this.chatOpen = false
-      this.activeTicket = null
-      this.messages = []
-      this.replyText = ''
-    },
-    async sendReply() {
-      if (!this.activeTicket || !this.replyText.trim()) return
-      this.sendLoading = true
-      try {
-        await sendTicketMessage(
-          this.activeTicket.ticket_id,
-          'user',
-          this.userName,
-          this.replyText.trim(),
-        )
-        this.replyText = ''
-        this.messages = await getTicketMessages(this.activeTicket.ticket_id)
-        await this.loadTickets()
-        const updated = this.tickets.find((item) => item.ticket_id === this.activeTicket.ticket_id)
-        if (updated) this.activeTicket = { ...updated }
-      } finally {
-        this.sendLoading = false
-      }
-    },
-    async closeCurrentTicket() {
-      if (!this.activeTicket) return
-      this.statusLoading = true
-      try {
-        await closeTicket(this.activeTicket.ticket_id)
-        await this.loadTickets()
-        const updated = this.tickets.find((item) => item.ticket_id === this.activeTicket.ticket_id)
-        if (updated) this.activeTicket = { ...updated }
-      } finally {
-        this.statusLoading = false
-      }
-    },
-    async reopenCurrentTicket() {
-      if (!this.activeTicket) return
-      this.statusLoading = true
-      try {
-        await reopenTicket(this.activeTicket.ticket_id)
-        await this.loadTickets()
-        const updated = this.tickets.find((item) => item.ticket_id === this.activeTicket.ticket_id)
-        if (updated) this.activeTicket = { ...updated }
-      } finally {
-        this.statusLoading = false
-      }
-    },
-  },
+const props = defineProps<{
+  userId: number
+  userName?: string
+}>()
+
+const loading = ref(true)
+const tickets = ref<any[]>([])
+const createOpen = ref(false)
+const createLoading = ref(false)
+const newSubject = ref('')
+const newMessage = ref('')
+const chatOpen = ref(false)
+const activeTicket = ref<any>(null)
+const messages = ref<any[]>([])
+const messagesLoading = ref(false)
+const sendLoading = ref(false)
+const statusLoading = ref(false)
+const replyText = ref('')
+
+const anyTicketModalOpen = computed(() => createOpen.value || chatOpen.value)
+
+watch(anyTicketModalOpen, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+}, { immediate: true })
+
+onMounted(() => {
+  loadTickets()
+})
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+})
+
+function normalizedStatus(status: string) {
+  return status === 'closed' ? 'closed' : 'open'
+}
+
+function statusLabel(status: string) {
+  return normalizedStatus(status) === 'closed' ? 'Uzavretý' : 'Otvorený'
+}
+
+function statusClass(status: string) {
+  return normalizedStatus(status) === 'closed' ? 'is-closed' : 'is-open'
+}
+
+function isCloseReasonMessage(message: any) {
+  return typeof message?.body === 'string' && message.body.startsWith(CLOSE_REASON_PREFIX)
+}
+
+function extractCloseReason(body: string) {
+  if (typeof body !== 'string') return ''
+  return body.replace(CLOSE_REASON_PREFIX, '').trim()
+}
+
+function formatDate(value: string | undefined | null) {
+  if (!value) return '—'
+  return new Date(value).toLocaleString('sk-SK', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+async function loadTickets() {
+  loading.value = true
+  try {
+    tickets.value = await getUserTickets(props.userId)
+  } finally {
+    loading.value = false
+  }
+}
+
+function openCreateModal() {
+  createOpen.value = true
+}
+
+function closeCreateModal() {
+  createOpen.value = false
+  newSubject.value = ''
+  newMessage.value = ''
+}
+
+async function createNewTicket() {
+  if (!newSubject.value.trim() || !newMessage.value.trim()) return
+  createLoading.value = true
+  try {
+    const ticket = await createTicket(
+      props.userId,
+      newSubject.value.trim(),
+      newMessage.value.trim(),
+      props.userName ?? 'User',
+    )
+    await loadTickets()
+    closeCreateModal()
+    const opened = tickets.value.find((item: any) => item.ticket_id === ticket.ticket_id) || ticket
+    await openChat(opened)
+  } finally {
+    createLoading.value = false
+  }
+}
+
+async function openChat(ticket: any) {
+  activeTicket.value = { ...ticket }
+  chatOpen.value = true
+  replyText.value = ''
+  messagesLoading.value = true
+  try {
+    messages.value = await getTicketMessages(ticket.ticket_id)
+  } finally {
+    messagesLoading.value = false
+  }
+}
+
+function closeChat() {
+  chatOpen.value = false
+  activeTicket.value = null
+  messages.value = []
+  replyText.value = ''
+}
+
+async function sendReply() {
+  if (!activeTicket.value || !replyText.value.trim()) return
+  sendLoading.value = true
+  try {
+    await sendTicketMessage(
+      activeTicket.value.ticket_id,
+      'user',
+      props.userName ?? 'User',
+      replyText.value.trim(),
+    )
+    replyText.value = ''
+    messages.value = await getTicketMessages(activeTicket.value.ticket_id)
+    await loadTickets()
+    const updated = tickets.value.find((item: any) => item.ticket_id === activeTicket.value.ticket_id)
+    if (updated) activeTicket.value = { ...updated }
+  } finally {
+    sendLoading.value = false
+  }
+}
+
+async function closeCurrentTicket() {
+  if (!activeTicket.value) return
+  statusLoading.value = true
+  try {
+    await closeTicket(activeTicket.value.ticket_id)
+    await loadTickets()
+    const updated = tickets.value.find((item: any) => item.ticket_id === activeTicket.value.ticket_id)
+    if (updated) activeTicket.value = { ...updated }
+  } finally {
+    statusLoading.value = false
+  }
+}
+
+async function reopenCurrentTicket() {
+  if (!activeTicket.value) return
+  statusLoading.value = true
+  try {
+    await reopenTicket(activeTicket.value.ticket_id)
+    await loadTickets()
+    const updated = tickets.value.find((item: any) => item.ticket_id === activeTicket.value.ticket_id)
+    if (updated) activeTicket.value = { ...updated }
+  } finally {
+    statusLoading.value = false
+  }
 }
 </script>
 

@@ -27,20 +27,15 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'StatsRow',
-  props: {
-    usersCount: { type: Number, required: true },
-    portfoliosCount: { type: Number, required: true },
-    ordersCount: { type: Number, required: true },
-    tradesCount: { type: Number, required: true },
-    holdingsCount: { type: Number, required: true },
-    ticketsCount: { type: Number, required: true },
-  },
-})
+<script setup lang="ts">
+const props = defineProps<{
+  usersCount: number
+  portfoliosCount: number
+  ordersCount: number
+  tradesCount: number
+  holdingsCount: number
+  ticketsCount: number
+}>()
 </script>
 
 <style scoped>

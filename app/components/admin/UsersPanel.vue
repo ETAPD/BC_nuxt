@@ -50,49 +50,41 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 
-export default defineComponent({
-  name: 'UsersPanel',
-  emits: ['manage-user'],
-  props: {
-    users: {
-      type: Array as PropType<any[]>,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      searchQuery: '',
-    }
-  },
-  computed: {
-    filteredUsers(): any[] {
-      const q = this.searchQuery.trim().toLowerCase()
-      if (!q) return this.users
-      return this.users.filter((user: any) => {
-        return (
-          user.email?.toLowerCase().includes(q) ||
-          user.full_name?.toLowerCase().includes(q) ||
-          String(user.user_id).includes(q)
-        )
-      })
-    },
-  },
-  methods: {
-    formatDate(value: string) {
-      if (!value) return '—'
-      return new Date(value).toLocaleDateString('sk-SK', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    },
-  },
+const props = defineProps<{
+  users: any[]
+}>()
+
+const emit = defineEmits<{
+  'manage-user': [user: any]
+}>()
+
+const searchQuery = ref('')
+
+const filteredUsers = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return props.users
+  return props.users.filter((user: any) => {
+    return (
+      user.email?.toLowerCase().includes(q) ||
+      user.full_name?.toLowerCase().includes(q) ||
+      String(user.user_id).includes(q)
+    )
+  })
 })
+
+function formatDate(value: string) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('sk-SK', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 </script>
 
 <style scoped>

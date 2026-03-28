@@ -77,68 +77,59 @@
   </teleport>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import type { PropType } from 'vue'
+<script setup lang="ts">
+import { ref, watch, onBeforeUnmount } from 'vue'
 
-export default defineComponent({
-  name: 'UserManageModal',
-  emits: ['close', 'save', 'password-reset'],
-  props: {
-    open: {
-      type: Boolean,
-      required: true,
-    },
-    user: {
-      type: Object as PropType<any | null>,
-      default: null,
-    },
-    saving: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps<{
+  open: boolean
+  user: any | null
+  saving?: boolean
+}>()
+
+const emit = defineEmits<{
+  close: []
+  save: [user: any]
+  'password-reset': [email: string]
+}>()
+
+const localUser = ref<any | null>(props.user ? { ...props.user } : null)
+
+watch(
+  () => props.user,
+  (newUser) => {
+    localUser.value = newUser ? { ...newUser } : null
   },
-  data() {
-    return {
-      localUser: this.user ? { ...this.user } : null as any | null,
-    }
+  { immediate: true, deep: true }
+)
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (typeof document === 'undefined') return
+    document.body.style.overflow = isOpen ? 'hidden' : ''
   },
-  watch: {
-    user: {
-      immediate: true,
-      deep: true,
-      handler(newUser: any | null) {
-        this.localUser = newUser ? { ...newUser } : null
-      },
-    },
-    open: {
-      immediate: true,
-      handler(isOpen: boolean) {
-        // Guard for SSR where document is undefined
-        if (typeof document === 'undefined') return
-        document.body.style.overflow = isOpen ? 'hidden' : ''
-      },
-    },
-  },
-  beforeUnmount() {
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = ''
-    }
-  },
-  methods: {
-    handleClose() {
-      this.$emit('close')
-    },
-    handleSave() {
-      if (!this.localUser) return
-      this.$emit('save', { ...this.localUser })
-    },
-    handlePasswordReset() {
-      if (!this.localUser?.email) return
-      this.$emit('password-reset', this.localUser.email)
-    },
-  },
+  { immediate: true }
+)
+
+onBeforeUnmount(() => {
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = ''
+  }
 })
+
+function handleClose() {
+  emit('close')
+}
+
+function handleSave() {
+  if (!localUser.value) return
+  emit('save', { ...localUser.value })
+}
+
+function handlePasswordReset() {
+  if (!localUser.value?.email) return
+  emit('password-reset', localUser.value.email)
+}
 </script>
 
 <style scoped>

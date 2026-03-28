@@ -12,9 +12,7 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
-
+<script setup lang="ts">
 const tabs = [
   { key: 'users', label: 'Používatelia', icon: '👤' },
   { key: 'portfolios', label: 'Portfóliá', icon: '💼' },
@@ -26,21 +24,13 @@ const tabs = [
 
 type TabKey = (typeof tabs)[number]['key']
 
-export default defineComponent({
-  name: 'TabsBar',
-  emits: ['update:activeTab'],
-  props: {
-    activeTab: {
-      type: String as PropType<TabKey>,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      tabs,
-    }
-  },
-})
+const props = defineProps<{
+  activeTab: TabKey
+}>()
+
+const emit = defineEmits<{
+  'update:activeTab': [key: TabKey]
+}>()
 </script>
 
 <style scoped>

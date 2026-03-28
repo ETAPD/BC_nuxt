@@ -157,182 +157,188 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import { getPriceHistory } from '~/composables/useAssets'
 
-export default defineComponent({
-  name: "AssetDetailModal",
-  emits: ["close"],
-  props: {
-    showDetail: { type: Boolean, default: false },
-    detailAsset: { type: Object, default: null },
-    formatCurrency: { type: Function, required: true },
-  },
-  data() {
-    return {
-      ranges: ["1h", "24h", "7d", "30d"],
-      detailRange: "24h" as "1h" | "24h" | "7d" | "30d",
-      detailLoading: false,
-      detailPrices: [] as any[],
-      chartWidth: 600,
-      chartHeight: 200,
-      chartPadding: 30,
-      chartTooltip: {
-        show: false,
-        x: 0,
-        y: 0,
-        price: 0,
-        date: "",
-        change: 0,
-        changePct: "0",
-      } as any,
-    };
-  },
-  computed: {
-    chartMinPrice(): number {
-      const prices = (this.detailPrices as any[]).map(
-        (point: any) => point.price,
-      );
-      return prices.length ? Math.min(...prices) : 0;
-    },
-    chartMaxPrice(): number {
-      const prices = (this.detailPrices as any[]).map(
-        (point: any) => point.price,
-      );
-      return prices.length ? Math.max(...prices) : 0;
-    },
-    chartPriceChange(): number {
-      const points = this.detailPrices as any[];
-      if (points.length < 2) return 0;
-      return Number(points[points.length - 1].price) - Number(points[0].price);
-    },
-    chartPriceChangePercent(): string {
-      const points = this.detailPrices as any[];
-      if (points.length < 2 || Number(points[0].price) === 0) return "0.0";
-      return (
-        ((Number(points[points.length - 1].price) - Number(points[0].price)) /
-          Number(points[0].price)) *
-        100
-      ).toFixed(2);
-    },
-    priceChartPath(): string {
-      const points = this.detailPrices as any[];
-      if (points.length < 2) return "";
-      const prices = points.map((point: any) => Number(point.price));
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      const priceRange = maxPrice - minPrice || 1;
-      const width = this.chartWidth - this.chartPadding * 2;
-      const height = this.chartHeight - this.chartPadding * 2;
-      return points
-        .map((point: any, index: number) => {
-          const x = this.chartPadding + (index / (points.length - 1)) * width;
-          const y =
-            this.chartPadding +
-            height -
-            ((Number(point.price) - minPrice) / priceRange) * height;
-          return `${index === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-        })
-        .join(" ");
-    },
-    priceChartArea(): string {
-      if (!this.priceChartPath) return "";
-      const width = this.chartWidth - this.chartPadding * 2;
-      const lastX = this.chartPadding + width;
-      const bottomY = this.chartHeight - this.chartPadding;
-      return `${this.priceChartPath} L${lastX},${bottomY} L${this.chartPadding},${bottomY} Z`;
-    },
-  },
-  watch: {
-    showDetail: {
-      immediate: true,
-      handler(value: boolean) {
-        if (value) {
-          this.detailRange = "24h";
-          this.loadPriceData();
-        }
-      },
-    },
-    detailAsset() {
-      if (this.showDetail) {
-        this.detailRange = "24h";
-        this.loadPriceData();
-      }
-    },
-  },
-  methods: {
-    async loadPriceData() {
-      if (!this.detailAsset?.asset_id || !this.showDetail) return;
-      this.detailLoading = true;
-      this.chartTooltip.show = false;
-      try {
-        this.detailPrices = await getPriceHistory(
-          this.detailAsset.asset_id,
-          this.detailRange,
-        );
-      } catch {
-        this.detailPrices = [];
-      } finally {
-        this.detailLoading = false;
-      }
-    },
-    async setRange(range: "1h" | "24h" | "7d" | "30d") {
-      if (this.detailRange === range) return;
-      this.detailRange = range;
-      await this.loadPriceData();
-    },
-    onChartMouseMove(event: MouseEvent) {
-      const points = this.detailPrices as any[];
-      if (points.length < 2) return;
-      const svg = event.currentTarget as SVGElement | null;
-      if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * this.chartWidth;
-      const width = this.chartWidth - this.chartPadding * 2;
-      const relativeX = Math.max(0, Math.min(width, x - this.chartPadding));
-      const pointIndex = Math.round((relativeX / width) * (points.length - 1));
-      const point = points[pointIndex];
-      if (!point) return;
-      const prices = points.map((item: any) => Number(item.price));
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      const priceRange = maxPrice - minPrice || 1;
-      const height = this.chartHeight - this.chartPadding * 2;
-      const pointX =
-        this.chartPadding + (pointIndex / (points.length - 1)) * width;
-      const pointY =
-        this.chartPadding +
+const props = defineProps<{
+  showDetail: boolean
+  detailAsset: any | null
+  formatCurrency: (value: number, currency?: string) => string
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const ranges = ['1h', '24h', '7d', '30d'] as const
+const detailRange = ref<'1h' | '24h' | '7d' | '30d'>('24h')
+const detailLoading = ref(false)
+const detailPrices = ref<any[]>([])
+const chartWidth = 600
+const chartHeight = 200
+const chartPadding = 30
+const chartTooltip = ref<any>({
+  show: false,
+  x: 0,
+  y: 0,
+  price: 0,
+  date: '',
+  change: 0,
+  changePct: '0',
+})
+
+const chartMinPrice = computed(() => {
+  const prices = detailPrices.value.map((point: any) => point.price)
+  return prices.length ? Math.min(...prices) : 0
+})
+
+const chartMaxPrice = computed(() => {
+  const prices = detailPrices.value.map((point: any) => point.price)
+  return prices.length ? Math.max(...prices) : 0
+})
+
+const chartPriceChange = computed(() => {
+  const points = detailPrices.value
+  if (points.length < 2) return 0
+  return Number(points[points.length - 1].price) - Number(points[0].price)
+})
+
+const chartPriceChangePercent = computed(() => {
+  const points = detailPrices.value
+  if (points.length < 2 || Number(points[0].price) === 0) return '0.0'
+  return (
+    ((Number(points[points.length - 1].price) - Number(points[0].price)) /
+      Number(points[0].price)) *
+    100
+  ).toFixed(2)
+})
+
+const priceChartPath = computed(() => {
+  const points = detailPrices.value
+  if (points.length < 2) return ''
+  const prices = points.map((point: any) => Number(point.price))
+  const minPrice = Math.min(...prices)
+  const maxPrice = Math.max(...prices)
+  const priceRange = maxPrice - minPrice || 1
+  const width = chartWidth - chartPadding * 2
+  const height = chartHeight - chartPadding * 2
+  return points
+    .map((point: any, index: number) => {
+      const x = chartPadding + (index / (points.length - 1)) * width
+      const y =
+        chartPadding +
         height -
-        ((Number(point.price) - minPrice) / priceRange) * height;
-      const startPrice = Number(points[0].price) || 0;
-      const change = Number(point.price) - startPrice;
-      const changePct = startPrice
-        ? ((change / startPrice) * 100).toFixed(2)
-        : "0.00";
-      this.chartTooltip = {
-        show: true,
-        x: pointX,
-        y: pointY,
-        price: Number(point.price),
-        date: this.formatDate(point.recorded_at),
-        change,
-        changePct,
-      };
-    },
-    onChartMouseLeave() {
-      this.chartTooltip.show = false;
-    },
-    formatDate(value: string) {
-      if (!value) return "";
-      return new Date(value).toLocaleString("sk-SK");
-    },
-    handleClose() {
-      this.chartTooltip.show = false;
-      this.detailPrices = [];
-      this.$emit("close");
-    },
+        ((Number(point.price) - minPrice) / priceRange) * height
+      return `${index === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
+    })
+    .join(' ')
+})
+
+const priceChartArea = computed(() => {
+  if (!priceChartPath.value) return ''
+  const width = chartWidth - chartPadding * 2
+  const lastX = chartPadding + width
+  const bottomY = chartHeight - chartPadding
+  return `${priceChartPath.value} L${lastX},${bottomY} L${chartPadding},${bottomY} Z`
+})
+
+watch(
+  () => props.showDetail,
+  (value) => {
+    if (value) {
+      detailRange.value = '24h'
+      loadPriceData()
+    }
   },
-});
+  { immediate: true }
+)
+
+watch(
+  () => props.detailAsset,
+  () => {
+    if (props.showDetail) {
+      detailRange.value = '24h'
+      loadPriceData()
+    }
+  }
+)
+
+async function loadPriceData() {
+  if (!props.detailAsset?.asset_id || !props.showDetail) return
+  detailLoading.value = true
+  chartTooltip.value.show = false
+  try {
+    detailPrices.value = await getPriceHistory(
+      props.detailAsset.asset_id,
+      detailRange.value,
+    )
+  } catch {
+    detailPrices.value = []
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+async function setRange(range: '1h' | '24h' | '7d' | '30d') {
+  if (detailRange.value === range) return
+  detailRange.value = range
+  await loadPriceData()
+}
+
+function onChartMouseMove(event: MouseEvent) {
+  const points = detailPrices.value
+  if (points.length < 2) return
+  const svg = event.currentTarget as SVGElement | null
+  if (!svg) return
+  const rect = svg.getBoundingClientRect()
+  const x = ((event.clientX - rect.left) / rect.width) * chartWidth
+  const width = chartWidth - chartPadding * 2
+  const relativeX = Math.max(0, Math.min(width, x - chartPadding))
+  const pointIndex = Math.round((relativeX / width) * (points.length - 1))
+  const point = points[pointIndex]
+  if (!point) return
+  const prices = points.map((item: any) => Number(item.price))
+  const minPrice = Math.min(...prices)
+  const maxPrice = Math.max(...prices)
+  const priceRange = maxPrice - minPrice || 1
+  const height = chartHeight - chartPadding * 2
+  const pointX =
+    chartPadding + (pointIndex / (points.length - 1)) * width
+  const pointY =
+    chartPadding +
+    height -
+    ((Number(point.price) - minPrice) / priceRange) * height
+  const startPrice = Number(points[0].price) || 0
+  const change = Number(point.price) - startPrice
+  const changePct = startPrice
+    ? ((change / startPrice) * 100).toFixed(2)
+    : '0.00'
+  chartTooltip.value = {
+    show: true,
+    x: pointX,
+    y: pointY,
+    price: Number(point.price),
+    date: formatDate(point.recorded_at),
+    change,
+    changePct,
+  }
+}
+
+function onChartMouseLeave() {
+  chartTooltip.value.show = false
+}
+
+function formatDate(value: string) {
+  if (!value) return ''
+  return new Date(value).toLocaleString('sk-SK')
+}
+
+function handleClose() {
+  chartTooltip.value.show = false
+  detailPrices.value = []
+  emit('close')
+}
 </script>
 
 <style></style>

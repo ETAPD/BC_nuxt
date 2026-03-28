@@ -67,59 +67,54 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'FundingMethodsPanel',
-  props: {
-    methodsList: {
-      type: Array,
-      default() {
-        return []
-      },
-    },
-    saving: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['add', 'remove'],
-  data() {
-    return {
-      showAddFunding: false,
-      newFunding: this.getEmptyFunding(),
-    }
-  },
-  methods: {
-    getEmptyFunding() {
-      return {
-        method_type: 'bank',
-        label: '',
-        last_four: '',
-        is_default: false,
-      }
-    },
-    toggleAdd() {
-      this.showAddFunding = !this.showAddFunding
-      if (!this.showAddFunding) {
-        this.newFunding = this.getEmptyFunding()
-      }
-    },
-    sanitizeLastFour() {
-      this.newFunding.last_four = String(this.newFunding.last_four || '').replace(/\D/g, '').slice(0, 4)
-    },
-    fundingIcon(type) {
-      if (type === 'bank') return '🏦'
-      if (type === 'card') return '💳'
-      if (type === 'crypto') return '₿'
-      return '💰'
-    },
-    submitAdd() {
-      if (!this.newFunding.label.trim()) return
-      this.$emit('add', { ...this.newFunding, label: this.newFunding.label.trim() })
-      this.newFunding = this.getEmptyFunding()
-      this.showAddFunding = false
-    },
-  },
+<script setup lang="ts">
+import { ref } from 'vue'
+
+defineProps<{
+  methodsList?: any[]
+  saving?: boolean
+}>()
+
+const emit = defineEmits<{
+  add: [data: any]
+  remove: [id: any]
+}>()
+
+function getEmptyFunding() {
+  return {
+    method_type: 'bank',
+    label: '',
+    last_four: '',
+    is_default: false,
+  }
+}
+
+const showAddFunding = ref(false)
+const newFunding = ref(getEmptyFunding())
+
+function toggleAdd() {
+  showAddFunding.value = !showAddFunding.value
+  if (!showAddFunding.value) {
+    newFunding.value = getEmptyFunding()
+  }
+}
+
+function sanitizeLastFour() {
+  newFunding.value.last_four = String(newFunding.value.last_four || '').replace(/\D/g, '').slice(0, 4)
+}
+
+function fundingIcon(type: string) {
+  if (type === 'bank') return '🏦'
+  if (type === 'card') return '💳'
+  if (type === 'crypto') return '₿'
+  return '💰'
+}
+
+function submitAdd() {
+  if (!newFunding.value.label.trim()) return
+  emit('add', { ...newFunding.value, label: newFunding.value.label.trim() })
+  newFunding.value = getEmptyFunding()
+  showAddFunding.value = false
 }
 </script>
 

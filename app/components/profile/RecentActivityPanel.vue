@@ -17,29 +17,20 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'RecentActivityPanel',
-  props: {
-    items: {
-      type: Array,
-      default() {
-        return []
-      },
-    },
-  },
-  methods: {
-    timeAgo(dateStr) {
-      if (!dateStr) return '—'
-      const diff = Date.now() - new Date(dateStr).getTime()
-      const mins = Math.floor(diff / 60000)
-      if (mins < 1) return 'Práve teraz'
-      if (mins < 60) return `pred ${mins} min`
-      const hrs = Math.floor(mins / 60)
-      if (hrs < 24) return `pred ${hrs} hod`
-      return `pred ${Math.floor(hrs / 24)} d`
-    },
-  },
+<script setup lang="ts">
+defineProps<{
+  items?: any[]
+}>()
+
+function timeAgo(dateStr: string | undefined | null) {
+  if (!dateStr) return '—'
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Práve teraz'
+  if (mins < 60) return `pred ${mins} min`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `pred ${hrs} hod`
+  return `pred ${Math.floor(hrs / 24)} d`
 }
 </script>
 

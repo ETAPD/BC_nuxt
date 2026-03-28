@@ -90,10 +90,10 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: "auth" });
-</script>
+import { ref, computed, onMounted } from 'vue'
 
-<script lang="ts">
+definePageMeta({ middleware: "auth" });
+
 type AdminTab =
   | "users"
   | "portfolios"
@@ -103,203 +103,201 @@ type AdminTab =
   | "messages"
   | "tickets";
 
-export default defineComponent({
-  name: "AdminView",
-  data() {
-    return {
-      loading: true,
-      loadError: "",
-      actionError: "",
-      actionSuccess: "",
-      adminName: "",
-      activeTab: "users" as AdminTab,
-      users: [] as any[],
-      portfolios: [] as any[],
-      orders: [] as any[],
-      trades: [] as any[],
-      holdings: [] as any[],
-      contactMessages: [] as any[],
-      tickets: [] as any[],
-      modalOpen: false,
-      modalUser: null as any | null,
-      modalSaving: false,
-    };
-  },
-  computed: {
-    hasData(): boolean {
-      return (
-        this.users.length > 0 ||
-        this.portfolios.length > 0 ||
-        this.orders.length > 0 ||
-        this.trades.length > 0 ||
-        this.holdings.length > 0 ||
-        this.contactMessages.length > 0 ||
-        this.tickets.length > 0
-      );
-    },
-  },
-  async mounted() {
-    await this.loadAdminData();
-  },
-  methods: {
-    translateOrderStatus(status: string) {
-      const map: Record<string, string> = {
-        pending: "pending",
-        active: "active",
-        filled: "filled",
-        cancelled: "cancelled",
-        rejected: "rejected",
-      };
-      return map[status] || status;
-    },
-    async loadAdminData() {
-      this.loading = true;
-      this.loadError = "";
-      try {
-        const user = await getDbUser();
-        if (!user || (user.status !== "admin" && user.role !== "admin")) {
-          this.$router.push("/dashboard");
-          return;
-        }
-        this.adminName = user.full_name || "Administrator";
+const loading = ref(true)
+const loadError = ref("")
+const actionError = ref("")
+const actionSuccess = ref("")
+const adminName = ref("")
+const activeTab = ref<AdminTab>("users")
+const users = ref<any[]>([])
+const portfolios = ref<any[]>([])
+const orders = ref<any[]>([])
+const trades = ref<any[]>([])
+const holdings = ref<any[]>([])
+const contactMessages = ref<any[]>([])
+const tickets = ref<any[]>([])
+const modalOpen = ref(false)
+const modalUser = ref<any>(null)
+const modalSaving = ref(false)
 
-        const [
-          users,
-          portfolios,
-          orders,
-          trades,
-          holdings,
-          contactMessages,
-          tickets,
-        ] = await Promise.all([
-          adminGetAllUsers(),
-          adminGetAllPortfolios(),
-          adminGetAllOrders(),
-          adminGetAllTrades(),
-          adminGetAllHoldings(),
-          adminGetContactMessages().catch(() => []),
-          adminGetAllTickets().catch((error: any) => {
-            this.actionError =
-              error?.message || "Failed to load support tickets.";
-            return [];
-          }),
-        ]);
+const hasData = computed(() => {
+  return (
+    users.value.length > 0 ||
+    portfolios.value.length > 0 ||
+    orders.value.length > 0 ||
+    trades.value.length > 0 ||
+    holdings.value.length > 0 ||
+    contactMessages.value.length > 0 ||
+    tickets.value.length > 0
+  )
+})
 
-        this.users = users;
-        this.portfolios = portfolios;
-        this.orders = orders;
-        this.trades = trades;
-        this.holdings = holdings;
-        this.contactMessages = contactMessages;
-        this.tickets = tickets;
-      } catch (error: any) {
-        this.loadError = error?.message || "Failed to load admin data.";
-      } finally {
-        this.loading = false;
-      }
-    },
-    async refreshTickets() {
-      try {
-        this.tickets = await adminGetAllTickets();
-      } catch (error: any) {
-        this.actionError = error?.message || "Failed to refresh tickets.";
-      }
-    },
-    openUserModal(user: any) {
-      this.modalUser = { ...user };
-      this.modalOpen = true;
-    },
-    openTicketUserModal(ticketOrUser: any) {
-      if (!ticketOrUser) return;
+function translateOrderStatus(status: string) {
+  const map: Record<string, string> = {
+    pending: "pending",
+    active: "active",
+    filled: "filled",
+    cancelled: "cancelled",
+    rejected: "rejected",
+  }
+  return map[status] || status
+}
 
-      const matchedUser = this.users.find(
-        (item: any) => item.user_id === ticketOrUser.user_id,
-      );
-      if (matchedUser) {
-        this.openUserModal(matchedUser);
-        return;
-      }
+async function loadAdminData() {
+  loading.value = true
+  loadError.value = ""
+  try {
+    const user = await getDbUser()
+    if (!user || (user.status !== "admin" && user.role !== "admin")) {
+      navigateTo("/dashboard")
+      return
+    }
+    adminName.value = user.full_name || "Administrator"
 
-      this.openUserModal({
-        ...ticketOrUser,
-        full_name: ticketOrUser.full_name ?? ticketOrUser.user_name ?? "",
-        email: ticketOrUser.email ?? ticketOrUser.user_email ?? "",
-      });
-    },
-    closeUserModal() {
-      this.modalOpen = false;
-      this.modalUser = null;
-    },
-    async saveUserChanges(userDraft: any) {
-      if (!userDraft) return;
-      this.modalSaving = true;
-      this.actionError = "";
-      this.actionSuccess = "";
-      try {
-        const userId = userDraft.user_id;
-        await adminUpdateUser(userId, {
-          full_name: userDraft.full_name,
-          email: userDraft.email,
-          preferred_currency: userDraft.preferred_currency,
-          status: userDraft.status,
-        });
-        if (userDraft.role) {
-          await setUserRole(userId, userDraft.role);
-        }
-        const index = this.users.findIndex(
-          (item: any) => item.user_id === userId,
-        );
-        if (index !== -1) {
-          this.users.splice(index, 1, { ...this.users[index], ...userDraft });
-        }
-        this.actionSuccess = "User was updated successfully.";
-        this.closeUserModal();
-      } catch (error: any) {
-        this.actionError = error?.message || String(error);
-      } finally {
-        this.modalSaving = false;
-      }
-    },
-    async triggerPasswordReset(email: string) {
-      if (!email) return;
-      this.actionError = "";
-      this.actionSuccess = "";
-      try {
-        await sendPasswordReset(email);
-        this.actionSuccess = "Password reset email was sent.";
-      } catch (error: any) {
-        this.actionError = error?.message || String(error);
-      }
-    },
-    async changeOrderStatus(orderId: number, newStatus: string) {
-      this.actionError = "";
-      this.actionSuccess = "";
-      try {
-        await adminUpdateOrderStatus(orderId, newStatus);
-        const order = this.orders.find(
-          (item: any) => item.order_id === orderId,
-        );
-        if (order) order.status = newStatus;
-        this.actionSuccess = `Order #${orderId} was changed to ${this.translateOrderStatus(newStatus)}.`;
-      } catch (error: any) {
-        this.actionError = error?.message || String(error);
-      }
-    },
-    async deleteMessage(messageId: number) {
-      this.actionError = "";
-      this.actionSuccess = "";
-      try {
-        await adminDeleteContactMessage(messageId);
-        this.contactMessages = this.contactMessages.filter(
-          (message: any) => message.id !== messageId,
-        );
-        this.actionSuccess = "Message was deleted.";
-      } catch (error: any) {
-        this.actionError = error?.message || String(error);
-      }
-    },
-  },
-});
+    const [
+      usersData,
+      portfoliosData,
+      ordersData,
+      tradesData,
+      holdingsData,
+      contactMessagesData,
+      ticketsData,
+    ] = await Promise.all([
+      adminGetAllUsers(),
+      adminGetAllPortfolios(),
+      adminGetAllOrders(),
+      adminGetAllTrades(),
+      adminGetAllHoldings(),
+      adminGetContactMessages().catch(() => []),
+      adminGetAllTickets().catch((error: any) => {
+        actionError.value = error?.message || "Failed to load support tickets."
+        return []
+      }),
+    ])
+
+    users.value = usersData
+    portfolios.value = portfoliosData
+    orders.value = ordersData
+    trades.value = tradesData
+    holdings.value = holdingsData
+    contactMessages.value = contactMessagesData
+    tickets.value = ticketsData
+  } catch (error: any) {
+    loadError.value = error?.message || "Failed to load admin data."
+  } finally {
+    loading.value = false
+  }
+}
+
+async function refreshTickets() {
+  try {
+    tickets.value = await adminGetAllTickets()
+  } catch (error: any) {
+    actionError.value = error?.message || "Failed to refresh tickets."
+  }
+}
+
+function openUserModal(user: any) {
+  modalUser.value = { ...user }
+  modalOpen.value = true
+}
+
+function openTicketUserModal(ticketOrUser: any) {
+  if (!ticketOrUser) return
+  const matchedUser = users.value.find(
+    (item: any) => item.user_id === ticketOrUser.user_id,
+  )
+  if (matchedUser) {
+    openUserModal(matchedUser)
+    return
+  }
+  openUserModal({
+    ...ticketOrUser,
+    full_name: ticketOrUser.full_name ?? ticketOrUser.user_name ?? "",
+    email: ticketOrUser.email ?? ticketOrUser.user_email ?? "",
+  })
+}
+
+function closeUserModal() {
+  modalOpen.value = false
+  modalUser.value = null
+}
+
+async function saveUserChanges(userDraft: any) {
+  if (!userDraft) return
+  modalSaving.value = true
+  actionError.value = ""
+  actionSuccess.value = ""
+  try {
+    const userId = userDraft.user_id
+    await adminUpdateUser(userId, {
+      full_name: userDraft.full_name,
+      email: userDraft.email,
+      preferred_currency: userDraft.preferred_currency,
+      status: userDraft.status,
+    })
+    if (userDraft.role) {
+      await setUserRole(userId, userDraft.role)
+    }
+    const index = users.value.findIndex(
+      (item: any) => item.user_id === userId,
+    )
+    if (index !== -1) {
+      users.value.splice(index, 1, { ...users.value[index], ...userDraft })
+    }
+    actionSuccess.value = "User was updated successfully."
+    closeUserModal()
+  } catch (error: any) {
+    actionError.value = error?.message || String(error)
+  } finally {
+    modalSaving.value = false
+  }
+}
+
+async function triggerPasswordReset(email: string) {
+  if (!email) return
+  actionError.value = ""
+  actionSuccess.value = ""
+  try {
+    await sendPasswordReset(email)
+    actionSuccess.value = "Password reset email was sent."
+  } catch (error: any) {
+    actionError.value = error?.message || String(error)
+  }
+}
+
+async function changeOrderStatus(orderId: number, newStatus: string) {
+  actionError.value = ""
+  actionSuccess.value = ""
+  try {
+    await adminUpdateOrderStatus(orderId, newStatus)
+    const order = orders.value.find(
+      (item: any) => item.order_id === orderId,
+    )
+    if (order) order.status = newStatus
+    actionSuccess.value = `Order #${orderId} was changed to ${translateOrderStatus(newStatus)}.`
+  } catch (error: any) {
+    actionError.value = error?.message || String(error)
+  }
+}
+
+async function deleteMessage(messageId: number) {
+  actionError.value = ""
+  actionSuccess.value = ""
+  try {
+    await adminDeleteContactMessage(messageId)
+    contactMessages.value = contactMessages.value.filter(
+      (message: any) => message.id !== messageId,
+    )
+    actionSuccess.value = "Message was deleted."
+  } catch (error: any) {
+    actionError.value = error?.message || String(error)
+  }
+}
+
+onMounted(async () => {
+  await loadAdminData()
+})
 </script>
 
 <style>
