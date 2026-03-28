@@ -1,8 +1,8 @@
-export const useSupportFormStore = defineStore("supportForm", {
-  state: () => ({
-    activeTab: "faq" as string,
-    selectedSubject: "" as string,
-    customSubject: "" as string,
-    message: "" as string,
-  }),
+export const useSupportFormStore = defineStore("supportForm", () => {
+  const activeTab = ref("faq");
+  const selectedSubject = ref("");
+  const customSubject = ref("");
+  const message = ref("");
+
+  return { activeTab, selectedSubject, customSubject, message };
 });
