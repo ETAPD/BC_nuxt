@@ -10,8 +10,21 @@
     </div>
 
     <main v-else class="admin-main">
+      <div v-if="actionError" class="action-banner action-banner--error">
+        <span>{{ actionError }}</span>
+        <button type="button" class="btn-close" @click="actionError = ''">
+          ✕
+        </button>
+      </div>
+      <div v-if="actionSuccess" class="action-banner action-banner--success">
+        <span>{{ actionSuccess }}</span>
+        <button type="button" class="btn-close" @click="actionSuccess = ''">
+          ✕
+        </button>
+      </div>
+
       <StatsRow
-        :users-count="usersTotal || users.length"
+        :users-count="users.length"
         :portfolios-count="portfolios.length"
         :orders-count="orders.length"
         :trades-count="trades.length"
@@ -26,37 +39,32 @@
         :users="users"
         @manage-user="openUserModal"
       />
-      <div v-if="activeTab === 'users' && usersTotalPages > 1" class="pagination-controls">
-        <button :disabled="usersPage <= 1" @click="prevUsersPage">← Predchádzajúca</button>
-        <span>Strana {{ usersPage }} / {{ usersTotalPages }}</span>
-        <button :disabled="usersPage >= usersTotalPages" @click="nextUsersPage">Nasledujúca →</button>
-      </div>
 
-      <LazyPortfoliosPanel
+      <PortfoliosPanel
         v-else-if="activeTab === 'portfolios'"
         :portfolios="portfolios"
       />
 
-      <LazyOrdersPanel
+      <OrdersPanel
         v-else-if="activeTab === 'orders'"
         :orders="orders"
         @change-status="changeOrderStatus"
       />
 
-      <LazyTradesPanel v-else-if="activeTab === 'trades'" :trades="trades" />
+      <TradesPanel v-else-if="activeTab === 'trades'" :trades="trades" />
 
-      <LazyHoldingsPanel
+      <HoldingsPanel
         v-else-if="activeTab === 'holdings'"
         :holdings="holdings"
       />
 
-      <LazyMessagesPanel
+      <MessagesPanel
         v-else-if="activeTab === 'messages'"
         :messages="contactMessages"
         @delete-message="deleteMessage"
       />
 
-      <LazyTicketsPanel
+      <TicketsPanel
         v-else-if="activeTab === 'tickets'"
         :tickets="tickets"
         :admin-name="adminName"
@@ -86,16 +94,6 @@ import { ref, computed, onMounted } from 'vue'
 
 definePageMeta({ middleware: "auth" });
 
-useHead({
-  title: "Admin | TradeProjekt",
-  meta: [
-    { name: "description", content: "Administrátorský panel pre správu používateľov a systému." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
-
-const toast = useToast();
-
 type AdminTab =
   | "users"
   | "portfolios"
@@ -122,12 +120,6 @@ const modalOpen = ref(false)
 const modalUser = ref<any>(null)
 const modalSaving = ref(false)
 
-// Pagination
-const usersPage = ref(1)
-const usersPerPage = 50
-const usersTotal = ref(0)
-const usersTotalPages = computed(() => Math.ceil(usersTotal.value / usersPerPage))
-
 const hasData = computed(() => {
   return (
     users.value.length > 0 ||
@@ -151,43 +143,19 @@ function translateOrderStatus(status: string) {
   return map[status] || status
 }
 
-async function loadUsers(page = 1) {
-  const result = await adminGetAllUsers(page, usersPerPage);
-  users.value = result.users;
-  usersTotal.value = result.total;
-  usersPage.value = page;
-}
-
-async function nextUsersPage() {
-  if (usersPage.value < usersTotalPages.value) {
-    await loadUsers(usersPage.value + 1);
-  }
-}
-
-async function prevUsersPage() {
-  if (usersPage.value > 1) {
-    await loadUsers(usersPage.value - 1);
-  }
-}
-
 async function loadAdminData() {
   loading.value = true
   loadError.value = ""
   try {
-    const isAdmin = await checkIsAdmin()
-    if (!isAdmin) {
-      navigateTo("/dashboard")
-      return
-    }
     const user = await getDbUser()
-    if (!user) {
+    if (!user || (user.status !== "admin" && user.role !== "admin")) {
       navigateTo("/dashboard")
       return
     }
     adminName.value = user.full_name || "Administrator"
 
     const [
-      _,
+      usersData,
       portfoliosData,
       ordersData,
       tradesData,
@@ -195,18 +163,19 @@ async function loadAdminData() {
       contactMessagesData,
       ticketsData,
     ] = await Promise.all([
-      loadUsers(1),
+      adminGetAllUsers(),
       adminGetAllPortfolios(),
       adminGetAllOrders(),
       adminGetAllTrades(),
       adminGetAllHoldings(),
       adminGetContactMessages().catch(() => []),
-      adminGetAllTickets().catch((err: any) => {
-        toast.error(err?.message || "Nepodarilo sa načítať tikety.");
+      adminGetAllTickets().catch((error: any) => {
+        actionError.value = error?.message || "Failed to load support tickets."
         return []
       }),
     ])
 
+    users.value = usersData
     portfolios.value = portfoliosData
     orders.value = ordersData
     trades.value = tradesData
@@ -215,7 +184,6 @@ async function loadAdminData() {
     tickets.value = ticketsData
   } catch (error: any) {
     loadError.value = error?.message || "Failed to load admin data."
-    toast.error(loadError.value);
   } finally {
     loading.value = false
   }
@@ -225,7 +193,7 @@ async function refreshTickets() {
   try {
     tickets.value = await adminGetAllTickets()
   } catch (error: any) {
-    toast.error(error?.message || "Nepodarilo sa obnoviť tikety.");
+    actionError.value = error?.message || "Failed to refresh tickets."
   }
 }
 
@@ -277,12 +245,10 @@ async function saveUserChanges(userDraft: any) {
     if (index !== -1) {
       users.value.splice(index, 1, { ...users.value[index], ...userDraft })
     }
-    await logAdminAction("update_user", "user", userId, `Updated: ${userDraft.full_name}`);
-    await createAdminNotification(userId, 'Zmena účtu', 'Váš profil bol aktualizovaný administrátorom.');
-    toast.success("Používateľ bol úspešne aktualizovaný.");
+    actionSuccess.value = "User was updated successfully."
     closeUserModal()
   } catch (error: any) {
-    toast.error(error?.message || String(error));
+    actionError.value = error?.message || String(error)
   } finally {
     modalSaving.value = false
   }
@@ -290,45 +256,42 @@ async function saveUserChanges(userDraft: any) {
 
 async function triggerPasswordReset(email: string) {
   if (!email) return
+  actionError.value = ""
+  actionSuccess.value = ""
   try {
     await sendPasswordReset(email)
-    await logAdminAction("password_reset", "user", email, `Password reset sent to ${email}`);
-    toast.success("E-mail na reset hesla bol odoslaný.");
+    actionSuccess.value = "Password reset email was sent."
   } catch (error: any) {
-    toast.error(error?.message || String(error));
+    actionError.value = error?.message || String(error)
   }
 }
 
 async function changeOrderStatus(orderId: number, newStatus: string) {
+  actionError.value = ""
+  actionSuccess.value = ""
   try {
     await adminUpdateOrderStatus(orderId, newStatus)
     const order = orders.value.find(
       (item: any) => item.order_id === orderId,
     )
-    if (order) {
-      order.status = newStatus
-      const userId = order.portfolios?.user_id
-      if (userId) {
-        await createAdminNotification(userId, 'Zmena príkazu', `Váš príkaz #${orderId} bol zmenený na: ${translateOrderStatus(newStatus)}.`)
-      }
-    }
-    await logAdminAction("change_order_status", "order", orderId, `Status → ${newStatus}`);
-    toast.success(`Príkaz #${orderId} bol zmenený na ${translateOrderStatus(newStatus)}.`);
+    if (order) order.status = newStatus
+    actionSuccess.value = `Order #${orderId} was changed to ${translateOrderStatus(newStatus)}.`
   } catch (error: any) {
-    toast.error(error?.message || String(error));
+    actionError.value = error?.message || String(error)
   }
 }
 
 async function deleteMessage(messageId: number) {
+  actionError.value = ""
+  actionSuccess.value = ""
   try {
     await adminDeleteContactMessage(messageId)
     contactMessages.value = contactMessages.value.filter(
       (message: any) => message.id !== messageId,
     )
-    await logAdminAction("delete_message", "contact_message", messageId, "Message deleted");
-    toast.success("Správa bola vymazaná.");
+    actionSuccess.value = "Message was deleted."
   } catch (error: any) {
-    toast.error(error?.message || String(error));
+    actionError.value = error?.message || String(error)
   }
 }
 
@@ -383,30 +346,6 @@ onMounted(async () => {
   color: #94a3b8;
   font-size: 1rem;
   cursor: pointer;
-}
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  color: #cbd5e1;
-}
-.pagination-controls button {
-  background: rgba(51, 65, 85, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  color: #e2e8f0;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.pagination-controls button:hover:not(:disabled) {
-  background: rgba(71, 85, 105, 0.7);
-}
-.pagination-controls button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 @media (max-width: 720px) {
   .admin-main {

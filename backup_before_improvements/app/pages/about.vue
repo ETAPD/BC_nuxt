@@ -1,11 +1,4 @@
 <script setup lang="ts">
-useHead({
-  title: "O nás | TradeProjekt",
-  meta: [
-    { name: "description", content: "Spoznajte náš tím a hodnoty, ktoré nás poháňajú vpred." },
-  ],
-});
-
 const team = [
   { name: 'Alex Carter', role: 'CEO a zakladateľ', initials: 'AC' },
   { name: 'Sarah Kim', role: 'Hlavná dizajnérka', initials: 'SK' },

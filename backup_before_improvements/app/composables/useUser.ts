@@ -77,14 +77,6 @@ export async function uploadProfilePicture(
   userId: number,
   file: File,
 ): Promise<string> {
-  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-  const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    throw new Error('Povolené sú len obrázky (JPEG, PNG, GIF, WebP).');
-  }
-  if (file.size > MAX_SIZE) {
-    throw new Error('Súbor je príliš veľký. Maximum je 5 MB.');
-  }
   const supabase = useSupabase();
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `avatars/${userId}_${Date.now()}.${ext}`;

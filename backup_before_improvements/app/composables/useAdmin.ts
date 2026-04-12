@@ -1,15 +1,11 @@
-export async function adminGetAllUsers(page = 1, perPage = 50) {
+export async function adminGetAllUsers() {
   const supabase = useSupabase();
-  const from = (page - 1) * perPage;
-  const to = from + perPage - 1;
-
-  const { data, error, count } = await supabase
+  const { data, error } = await supabase
     .from("users")
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw error;
-  return { users: data ?? [], total: count ?? 0 };
+  return data ?? [];
 }
 
 export async function adminGetAllPortfolios() {

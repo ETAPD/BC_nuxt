@@ -1,14 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "auth" });
 
-useHead({
-  title: "História | TradeProjekt",
-  meta: [
-    { name: "description", content: "Prehľad všetkých vašich obchodov a príkazov." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
-
 const router = useRouter();
 const loading = ref(true);
 const trades = ref<any[]>([]);

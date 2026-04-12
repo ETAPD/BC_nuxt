@@ -1,12 +1,4 @@
 <script setup lang="ts">
-useHead({
-  title: "Prihlásenie | TradeProjekt",
-  meta: [
-    { name: "description", content: "Prihláste sa do svojho obchodného účtu." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
-
 const router = useRouter();
 
 const form = ref({

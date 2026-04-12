@@ -1,13 +1,4 @@
 <script setup lang="ts">
-useHead({
-  title: "TradeProjekt — Investičná platforma",
-  meta: [
-    { name: "description", content: "Simulované obchodovanie s akciami, kryptomenami a ETF. Začnite zadarmo." },
-    { name: "og:title", content: "TradeProjekt — Investičná platforma" },
-    { name: "og:description", content: "Simulované obchodovanie s akciami, kryptomenami a ETF." },
-  ],
-});
-
 const router = useRouter();
 
 function goToDashboard() {

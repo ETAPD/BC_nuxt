@@ -4,91 +4,38 @@
 
     <main class="support-main">
       <header class="support-hero">
-        <div class="hero-left">
-          <span class="hero-icon">🛟</span>
-          <div>
-            <h1>Centrum podpory</h1>
-            <p>Nájdite odpovede na časté otázky alebo nám pošlite tiket.</p>
-          </div>
-        </div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <span class="hero-stat-value">&lt; 2h</span>
-            <span class="hero-stat-label">Priemerná odpoveď</span>
-          </div>
-          <div class="hero-stat">
-            <span class="hero-stat-value">24/7</span>
-            <span class="hero-stat-label">Dostupnosť</span>
-          </div>
-          <div class="hero-stat">
-            <span class="hero-stat-value">98%</span>
-            <span class="hero-stat-label">Spokojnosť</span>
-          </div>
-        </div>
+        <h1>Centrum podpory</h1>
+        <p>Nájdite odpovede na časté otázky alebo nám pošlite tiket.</p>
       </header>
-
-      <!-- Quick contact bar -->
-      <div class="contact-cards">
-        <div class="contact-card">
-          <span class="contact-card-icon">📧</span>
-          <div>
-            <h3>E-mail</h3>
-            <p>support@tradeprojekt.sk</p>
-          </div>
-        </div>
-        <div class="contact-card">
-          <span class="contact-card-icon">💬</span>
-          <div>
-            <h3>Live chat</h3>
-            <p>Cez tiketový systém nižšie</p>
-          </div>
-        </div>
-        <div class="contact-card">
-          <span class="contact-card-icon">🕐</span>
-          <div>
-            <h3>Pracovná doba</h3>
-            <p>Po – Pi: 8:00 – 20:00</p>
-          </div>
-        </div>
-      </div>
 
       <nav class="support-tabs">
         <button
           :class="['support-tab', { active: activeTab === 'faq' }]"
           @click="activeTab = 'faq'"
         >
-          📖 Časté otázky
+          Časté otázky
         </button>
         <button
           :class="['support-tab', { active: activeTab === 'create' }]"
           @click="activeTab = 'create'"
         >
-          ✉️ Odoslať tiket
+          Odoslať tiket
         </button>
         <button
           :class="['support-tab', { active: activeTab === 'tickets' }]"
           @click="activeTab = 'tickets'"
         >
-          📋 Moje tikety
+          Moje tikety
         </button>
       </nav>
 
       <!-- FAQ -->
       <section v-if="activeTab === 'faq'" class="faq-section">
-        <div class="faq-grid">
-          <div v-for="cat in faqCategories" :key="cat.title" class="faq-category">
-            <h3 class="faq-cat-title">{{ cat.icon }} {{ cat.title }}</h3>
-            <div class="faq-list">
-              <details v-for="(faq, i) in cat.items" :key="i" class="faq-item">
-                <summary>{{ faq.question }}</summary>
-                <p>{{ faq.answer }}</p>
-              </details>
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-cta">
-          <p>Nenašli ste odpoveď? <button class="link-btn" @click="activeTab = 'create'">Pošlite nám tiket →</button></p>
+        <div class="faq-list">
+          <details v-for="(faq, i) in faqs" :key="i" class="faq-item">
+            <summary>{{ faq.question }}</summary>
+            <p>{{ faq.answer }}</p>
+          </details>
         </div>
       </section>
 
@@ -96,12 +43,8 @@
       <section v-if="activeTab === 'create'" class="ticket-section">
         <div class="ticket-section__header">
           <div>
-            <h2>✉️ Nenašli ste odpoveď?</h2>
+            <h2>Nenašli ste odpoveď?</h2>
             <p>Pošlite nám tiket a ozveme sa vám čo najskôr.</p>
-          </div>
-          <div class="ticket-response-badge">
-            <span class="badge-dot"></span>
-            Priemerná odpoveď do 2 hodín
           </div>
         </div>
 
@@ -177,25 +120,6 @@
           :user-name="user.full_name || 'Používateľ'"
         />
       </section>
-
-      <!-- Tips section -->
-      <section class="tips-section">
-        <h3>💡 Tipy pre rýchle riešenie</h3>
-        <div class="tips-grid">
-          <div class="tip-card">
-            <span class="tip-num">1</span>
-            <p>Pred odoslaním tiketu skontrolujte sekciu <strong>Časté otázky</strong>.</p>
-          </div>
-          <div class="tip-card">
-            <span class="tip-num">2</span>
-            <p>Uveďte čo <strong>najpresnejší popis</strong> problému vrátane krokov na zopakovanie.</p>
-          </div>
-          <div class="tip-card">
-            <span class="tip-num">3</span>
-            <p>Skontrolujte stav tiketov v záložke <strong>Moje tikety</strong> — odpovede dostanete tam.</p>
-          </div>
-        </div>
-      </section>
     </main>
   </div>
 </template>
@@ -204,16 +128,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { createTicket } from '../composables/useSupportTickets'
-
-definePageMeta({ middleware: "auth" });
-
-useHead({
-  title: "Podpora | TradeProjekt",
-  meta: [
-    { name: "description", content: "Centrum podpory — časté otázky a tiketový systém." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
 
 const store = useSupportFormStore()
 const { activeTab, selectedSubject, customSubject, message } = storeToRefs(store)
@@ -278,93 +192,6 @@ const faqs = [
   },
 ]
 
-const faqCategories = [
-  {
-    icon: '📈',
-    title: 'Obchodovanie',
-    items: [
-      {
-        question: 'Ako vytvorím nový príkaz?',
-        answer: 'Prejdite na Dashboard, vyberte aktívum na paneli "Nový príkaz", zvoľte typ (tržový, limitný alebo stop-loss), zadajte množstvo a potvrďte odoslanie.',
-      },
-      {
-        question: 'Čo znamenajú stavy príkazov?',
-        answer: 'Čakajúci – príkaz čaká na spracovanie. Aktívny – príkaz je na trhu. Vyplnený – príkaz bol úspešne vykonaný. Zrušený/Zamietnutý – príkaz bol zrušený alebo zamietnutý.',
-      },
-      {
-        question: 'Ako zruším príkaz?',
-        answer: 'Na Dashboarde v sekcii "Otvorené príkazy" nájdete aktívne príkazy. Kliknite na "Zrušiť" pri príkaze, ktorý chcete zrušiť.',
-      },
-      {
-        question: 'Aký je rozdiel medzi tržným a limitným príkazom?',
-        answer: 'Tržný príkaz sa vykoná okamžite za aktuálnu cenu. Limitný príkaz sa vykoná až keď cena dosiahne vami stanovenú úroveň.',
-      },
-      {
-        question: 'Kde nájdem históriu obchodov?',
-        answer: 'Kompletná história obchodov je dostupná v sekcii "História" v navigačnom paneli.',
-      },
-    ],
-  },
-  {
-    icon: '👤',
-    title: 'Účet a profil',
-    items: [
-      {
-        question: 'Ako zmením heslo?',
-        answer: 'Prejdite do Profilu a v sekcii "Zabezpečenie" kliknite na "Zmeniť heslo". Zadajte aktuálne a nové heslo a potvrďte.',
-      },
-      {
-        question: 'Ako zmením osobné údaje?',
-        answer: 'V sekcii Profil kliknite na tlačidlo "Upraviť profil" a vyplňte požadované zmeny.',
-      },
-      {
-        question: 'Aké typy členstva sú dostupné?',
-        answer: 'Ponúkame Basic, Pro a Premium členstvo. Každá úroveň ponúka rôzne výhody, ako nižšie poplatky a rozšírené analytiky.',
-      },
-      {
-        question: 'Ako vymažem svoj účet?',
-        answer: 'V sekcii Profil → Zabezpečenie nájdete možnosť "Vymazať účet". Táto akcia je nevratná a vymaže všetky vaše dáta.',
-      },
-    ],
-  },
-  {
-    icon: '💳',
-    title: 'Platby a financie',
-    items: [
-      {
-        question: 'Ako pridám platobný spôsob?',
-        answer: 'V Profile nájdete sekciu "Platobné metódy", kde môžete pridať bankový účet alebo kartu.',
-      },
-      {
-        question: 'Ako dlho trvá spracovanie vkladu?',
-        answer: 'Bankové prevody sa spracúvajú do 1-3 pracovných dní. Kartové platby sú zvyčajne okamžité.',
-      },
-      {
-        question: 'Aké sú poplatky za obchodovanie?',
-        answer: 'Poplatky závisia od vašej úrovne členstva. Basic: 0,5%, Pro: 0,25%, Premium: 0,1% z hodnoty obchodu.',
-      },
-    ],
-  },
-  {
-    icon: '🔒',
-    title: 'Bezpečnosť',
-    items: [
-      {
-        question: 'Je moje konto bezpečné?',
-        answer: 'Áno. Používame šifrovanie SSL, bezpečné tokeny a automatické odhlásenie po nečinnosti. Vaše heslo je hashované a nikdy sa neukladá v čitateľnej forme.',
-      },
-      {
-        question: 'Čo robiť ak som zabudol heslo?',
-        answer: 'Na prihlasovacej stránke kliknite na "Zabudnuté heslo" a zadajte svoj e-mail. Dostanete odkaz na obnovenie hesla.',
-      },
-      {
-        question: 'Ako kontaktujem podporu?',
-        answer: 'Môžete použiť tiketový formulár na tejto stránke, stránku Kontakt, alebo napísať na support@tradeprojekt.sk.',
-      },
-    ],
-  },
-]
-
 const finalSubject = computed(() => {
   return selectedSubject.value === "__other"
     ? customSubject.value.trim()
@@ -424,96 +251,23 @@ async function submitTicket() {
   background: var(--color-background);
 }
 .support-main {
-  max-width: 1100px;
+  max-width: 860px;
   margin: 0 auto;
   padding: 2rem;
 }
 .support-hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-.hero-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.hero-icon {
-  font-size: 2.2rem;
-  flex-shrink: 0;
+  text-align: center;
+  margin-bottom: 2.5rem;
 }
 .support-hero h1 {
-  font-size: 1.6rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--color-white);
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.5rem;
 }
 .support-hero p {
   color: var(--color-text-muted);
-  font-size: 0.95rem;
-  margin: 0;
-}
-.hero-stats {
-  display: flex;
-  gap: 0.75rem;
-}
-.hero-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  background: var(--color-background-soft);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
-  min-width: 100px;
-}
-.hero-stat-value {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--color-accent);
-}
-.hero-stat-label {
-  font-size: 0.72rem;
-  color: var(--color-text-muted);
-}
-
-/* Contact bar */
-.contact-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-.contact-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--color-background-soft);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 1rem;
-  transition: border-color var(--transition-fast);
-}
-.contact-card:hover {
-  border-color: var(--color-accent);
-}
-.contact-card-icon {
-  font-size: 1.4rem;
-  flex-shrink: 0;
-}
-.contact-card h3 {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--color-white);
-  margin: 0;
-}
-.contact-card p {
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
+  font-size: 1.05rem;
   margin: 0;
 }
 
@@ -561,54 +315,10 @@ async function submitTicket() {
 .faq-section {
   margin-bottom: 0;
 }
-.faq-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  align-items: start;
-}
-.faq-category {
-  margin-bottom: 0;
-}
-.faq-cat-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-white);
-  margin: 0 0 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-border);
-}
 .faq-list {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-}
-.faq-cta {
-  text-align: center;
-  padding: 1.5rem;
-  margin-top: 1rem;
-  background: var(--color-background-soft);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-muted);
-  font-size: 0.92rem;
-}
-.faq-cta p {
-  margin: 0;
-}
-.link-btn {
-  background: none;
-  border: none;
-  color: var(--color-accent);
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0;
-  transition: opacity var(--transition-fast);
-}
-.link-btn:hover {
-  opacity: 0.8;
 }
 .faq-item {
   background: var(--color-background-soft);
@@ -621,9 +331,9 @@ async function submitTicket() {
   border-color: var(--color-accent);
 }
 .faq-item summary {
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   color: var(--color-white);
   cursor: pointer;
   list-style: none;
@@ -647,11 +357,11 @@ async function submitTicket() {
   display: none;
 }
 .faq-item p {
-  padding: 0 1rem 0.75rem;
+  padding: 0 1.25rem 1rem;
   color: var(--color-text);
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.92rem;
 }
 
 /* Ticket form */
@@ -662,12 +372,7 @@ async function submitTicket() {
   padding: 1.5rem;
 }
 .ticket-section__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
   margin-bottom: 1.25rem;
-  flex-wrap: wrap;
 }
 .ticket-section__header h2 {
   font-size: 1.2rem;
@@ -679,30 +384,6 @@ async function submitTicket() {
   color: var(--color-text-muted);
   margin: 0;
   font-size: 0.92rem;
-}
-.ticket-response-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  color: #22c55e;
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.badge-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #22c55e;
-  animation: pulse-dot 1.5s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
 }
 .ticket-login-notice {
   text-align: center;
@@ -801,80 +482,12 @@ async function submitTicket() {
 .flash-leave-to {
   opacity: 0;
 }
-/* Tips section */
-.tips-section {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--color-border);
-}
-.tips-section h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--color-white);
-  margin: 0 0 1rem;
-  text-align: center;
-}
-.tips-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-.tip-card {
-  background: var(--color-background-soft);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  text-align: center;
-  position: relative;
-}
-.tip-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-.tip-card p {
-  color: var(--color-text-muted);
-  font-size: 0.88rem;
-  line-height: 1.5;
-  margin: 0;
-}
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .support-main {
     padding: 1rem;
   }
-  .support-hero {
-    flex-direction: column;
-    text-align: center;
-  }
-  .hero-left {
-    flex-direction: column;
-  }
   .support-hero h1 {
     font-size: 1.5rem;
-  }
-  .hero-stats {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .contact-cards {
-    grid-template-columns: 1fr;
-  }
-  .faq-grid {
-    grid-template-columns: 1fr;
-  }
-  .tips-grid {
-    grid-template-columns: 1fr;
-  }
-  .ticket-section__header {
-    flex-direction: column;
   }
 }
 </style>

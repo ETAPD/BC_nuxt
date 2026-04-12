@@ -1,11 +1,4 @@
 <script setup lang="ts">
-useHead({
-  title: "Kontakt | TradeProjekt",
-  meta: [
-    { name: "description", content: "Kontaktujte nás — rádi vám pomôžeme s akýmkoľvek problémom." },
-  ],
-});
-
 const form = ref({
   name: "",
   email: "",

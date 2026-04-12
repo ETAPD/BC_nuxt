@@ -49,16 +49,8 @@ export async function getSession() {
   return data.session;
 }
 
-export async function changePassword(currentPassword: string, newPassword: string) {
+export async function changePassword(newPassword: string) {
   const supabase = useSupabase();
-  // Verify current password first
-  const { data } = await supabase.auth.getUser();
-  if (!data.user?.email) throw new Error('Nie je možné overiť používateľa.');
-  const { error: verifyErr } = await supabase.auth.signInWithPassword({
-    email: data.user.email,
-    password: currentPassword,
-  });
-  if (verifyErr) throw new Error('Aktuálne heslo je nesprávne.');
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) throw error;
 }

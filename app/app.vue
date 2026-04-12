@@ -5,5 +5,6 @@
       <NuxtPage />
     </NuxtLayout>
     <CookieConsent />
+    <ToastNotifications />
   </div>
 </template>

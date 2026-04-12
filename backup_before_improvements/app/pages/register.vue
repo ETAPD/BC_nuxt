@@ -1,12 +1,4 @@
 <script setup lang="ts">
-useHead({
-  title: "Registrácia | TradeProjekt",
-  meta: [
-    { name: "description", content: "Vytvorte si účet a začnite obchodovať." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
-
 const router = useRouter();
 
 const step = ref(1);

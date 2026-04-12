@@ -48,11 +48,6 @@
         </div>
 
         <div class="bottom-grid">
-          <AdminNotificationsPanel
-            :notifications="adminNotifications"
-            @read="handleMarkNotificationRead"
-          />
-
           <NotificationsPanel
             :prefs-data="prefs"
             :saving="prefsSaving"
@@ -107,14 +102,6 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 
 definePageMeta({ middleware: "auth" });
 
-useHead({
-  title: "Profil | TradeProjekt",
-  meta: [
-    { name: "description", content: "Nastavenia vášho účtu a profilu." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
-
 const router = useRouter()
 
 const loading = ref(true)
@@ -145,7 +132,6 @@ const deleteSaving = ref(false)
 const showEditProfile = ref(false)
 const editSaving = ref(false)
 const uploadingPicture = ref(false)
-const adminNotifications = ref<any[]>([])
 
 const anyModalOpen = computed(() => {
   return showEditProfile.value || showPasswordModal.value || showDeleteModal.value
@@ -225,7 +211,6 @@ async function loadProfile() {
         trades,
         prefData,
         fundingMethodsData,
-        notifications,
       ] = await Promise.all([
         getHoldings(portfolioData.portfolio_id),
         getWatchlistItems(userData.user_id),
@@ -233,7 +218,6 @@ async function loadProfile() {
         getAllTrades(portfolioData.portfolio_id),
         getUserPreferences(userData.user_id),
         getFundingMethods(userData.user_id),
-        getUserNotifications(userData.user_id).catch(() => []),
       ])
 
       holdingsCount.value = holdings.length
@@ -243,7 +227,6 @@ async function loadProfile() {
         (trade: any) => trade.trade_type,
       ).length
       fundingMethods.value = fundingMethodsData
-      adminNotifications.value = notifications
 
       if (prefData) {
         prefs.value = {
@@ -350,18 +333,6 @@ async function savePreferences(nextPrefs: any) {
   }
 }
 
-async function handleMarkNotificationRead(notification: any) {
-  if (!notification?.id || notification.is_read) return
-  try {
-    await markNotificationRead(notification.id)
-    adminNotifications.value = adminNotifications.value.map((n: any) =>
-      n.id === notification.id ? { ...n, is_read: true } : n,
-    )
-  } catch {
-    // silent
-  }
-}
-
 async function handleAddFunding(payload: any) {
   if (!user.value || !payload?.label?.trim()) return
   fundingSaving.value = true
@@ -388,10 +359,10 @@ async function handleRemoveFunding(id: number) {
   }
 }
 
-async function handleChangePassword(currentPassword: string, newPassword: string) {
+async function handleChangePassword(newPassword: string) {
   passwordSaving.value = true
   try {
-    await changePassword(currentPassword, newPassword)
+    await changePassword(newPassword)
     showPasswordModal.value = false
     flash("Heslo bolo zmenené")
   } catch (error: any) {

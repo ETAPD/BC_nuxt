@@ -1,25 +1,8 @@
 <script setup lang="ts">
-definePageMeta({ middleware: "auth" });
-
-useHead({
-  title: "Trhy | TradeProjekt",
-  meta: [
-    { name: "description", content: "Prehľad trhov, akcie, kryptomeny a ETF v reálnom čase." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
-
 const loading = ref(true);
 const assets = ref<any[]>([]);
 const searchQuery = ref("");
-const debouncedSearch = ref("");
 const filterType = ref("all");
-
-let _searchTimer: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (val) => {
-  if (_searchTimer) clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => { debouncedSearch.value = val; }, 300);
-});
 
 // Selected asset (inline chart – no modal)
 const selectedAsset = ref<any>(null);
@@ -146,7 +129,7 @@ const filteredAssets = computed(() => {
   if (filterType.value !== "all") {
     result = result.filter((a: any) => a.asset_type === filterType.value);
   }
-  const q = debouncedSearch.value.toLowerCase();
+  const q = searchQuery.value.toLowerCase();
   if (q) {
     result = result.filter(
       (a: any) =>

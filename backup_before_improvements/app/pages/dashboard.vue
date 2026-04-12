@@ -95,16 +95,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-definePageMeta({ middleware: "auth" });
-
-useHead({
-  title: "Dashboard | TradeProjekt",
-  meta: [
-    { name: "description", content: "Prehľad vášho investičného portfólia a obchodných aktivít." },
-    { name: "robots", content: "noindex, nofollow" },
-  ],
-});
-
 type DashboardAsset = any
 type DashboardHolding = any
 type DashboardOrder = any

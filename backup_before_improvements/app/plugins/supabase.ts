@@ -8,7 +8,7 @@ export default defineNuxtPlugin(() => {
     config.public.supabaseKey as string,
     {
       auth: {
-        autoRefreshToken: true,
+        autoRefreshToken: false,
         persistSession: true,
       },
     },

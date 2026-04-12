@@ -1,11 +1,4 @@
 <script setup lang="ts">
-useHead({
-  title: "Členstvo | TradeProjekt",
-  meta: [
-    { name: "description", content: "Porovnajte členské plány a vyberte si ten najlepší pre vás." },
-  ],
-});
-
 interface PlanDetail {
   name: string;
   price: string;

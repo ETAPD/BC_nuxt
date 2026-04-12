@@ -8,6 +8,11 @@
 
       <div class="modal-form">
         <div class="mf-row">
+          <label>Aktuálne heslo</label>
+          <input v-model="currentPassword" type="password" placeholder="Vaše súčasné heslo" />
+        </div>
+
+        <div class="mf-row">
           <label>Nové heslo</label>
           <input v-model="newPassword" type="password" placeholder="Min. 6 znakov" />
         </div>
@@ -40,15 +45,17 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  submit: [password: string]
+  submit: [currentPassword: string, newPassword: string]
 }>()
 
+const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
 const localError = ref('')
 
 watch(() => props.modelValue, (value) => {
   if (!value) {
+    currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
     localError.value = ''
@@ -61,6 +68,10 @@ function close() {
 
 function submitPassword() {
   localError.value = ''
+  if (!currentPassword.value) {
+    localError.value = 'Zadajte aktuálne heslo'
+    return
+  }
   if (newPassword.value.length < 6) {
     localError.value = 'Heslo musí mať aspoň 6 znakov'
     return
@@ -69,7 +80,7 @@ function submitPassword() {
     localError.value = 'Heslá sa nezhodujú'
     return
   }
-  emit('submit', newPassword.value)
+  emit('submit', currentPassword.value, newPassword.value)
 }
 </script>
 
