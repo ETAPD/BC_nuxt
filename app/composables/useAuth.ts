@@ -1,3 +1,4 @@
+// Registracia pouzivatela
 export async function signUp(
   email: string,
   password: string,
@@ -21,6 +22,7 @@ export async function signUp(
   return data;
 }
 
+// Prihlasenie pouzivatela
 export async function signIn(email: string, password: string) {
   const supabase = useSupabase();
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -31,27 +33,30 @@ export async function signIn(email: string, password: string) {
   return data;
 }
 
+// Odhlasenie pouzivatela
 export async function signOut() {
   const supabase = useSupabase();
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
 
+// Ziskanie aktualne prihlaseneho pouzivatela
 export async function getUser() {
   const supabase = useSupabase();
   const { data } = await supabase.auth.getUser();
   return data.user;
 }
 
+// Ziskanie aktualne session
 export async function getSession() {
   const supabase = useSupabase();
   const { data } = await supabase.auth.getSession();
   return data.session;
 }
 
+// Zmena hesla
 export async function changePassword(currentPassword: string, newPassword: string) {
   const supabase = useSupabase();
-  // Verify current password first
   const { data } = await supabase.auth.getUser();
   if (!data.user?.email) throw new Error('Nie je možné overiť používateľa.');
   const { error: verifyErr } = await supabase.auth.signInWithPassword({
@@ -63,6 +68,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
   if (error) throw error;
 }
 
+// Odoslanie resetu hesla
 export async function sendPasswordReset(email: string) {
   const supabase = useSupabase();
   const { data, error } = await supabase.auth.resetPasswordForEmail(email);

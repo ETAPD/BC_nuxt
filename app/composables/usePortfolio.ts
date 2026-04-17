@@ -1,3 +1,4 @@
+// Ziskanie portfolia pouzivatela
 export async function getPortfolio(userId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -14,6 +15,7 @@ export async function getPortfolio(userId: number) {
   return data;
 }
 
+// Vytvorenie portfolia ak neexistuje
 export async function ensurePortfolioExists(userId: number) {
   const supabase = useSupabase();
   const { data: existing } = await supabase
@@ -54,6 +56,7 @@ export async function ensurePortfolioExists(userId: number) {
   return data;
 }
 
+// Ziskanie drzanych aktiv
 export async function getHoldings(portfolioId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -71,6 +74,7 @@ export async function getHoldings(portfolioId: number) {
   }));
 }
 
+// Ziskanie watchlist poloziek
 export async function getWatchlistItems(userId: number) {
   const supabase = useSupabase();
   const { data: wl, error: wErr } = await supabase
@@ -92,6 +96,7 @@ export async function getWatchlistItems(userId: number) {
   return data ?? [];
 }
 
+// Pridanie do watchlistu
 export async function addWatchlistItem(
   userId: number,
   symbol: string,
@@ -119,6 +124,7 @@ export async function addWatchlistItem(
   if (error) throw error;
 }
 
+// Odstranenie z watchlistu
 export async function removeWatchlistItem(itemId: number) {
   const supabase = useSupabase();
   const { error } = await supabase

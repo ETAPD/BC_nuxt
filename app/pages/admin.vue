@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+// Admin panel - pouzivatelia, portfolia, objednavky, tikety
 import { ref, computed, onMounted } from 'vue'
 
 definePageMeta({ middleware: "auth" });
@@ -96,6 +97,7 @@ useHead({
 
 const toast = useToast();
 
+// Typy
 type AdminTab =
   | "users"
   | "portfolios"
@@ -105,6 +107,7 @@ type AdminTab =
   | "messages"
   | "tickets";
 
+// Stav nacitavania
 const loading = ref(true)
 const loadError = ref("")
 const actionError = ref("")
@@ -122,10 +125,10 @@ const modalOpen = ref(false)
 const modalUser = ref<any>(null)
 const modalSaving = ref(false)
 
-// Pagination
 const usersPage = ref(1)
 const usersPerPage = 50
 const usersTotal = ref(0)
+// Paginacia pouzivatelov
 const usersTotalPages = computed(() => Math.ceil(usersTotal.value / usersPerPage))
 
 const hasData = computed(() => {
@@ -140,6 +143,7 @@ const hasData = computed(() => {
   )
 })
 
+// Pomocne funkcie
 function translateOrderStatus(status: string) {
   const map: Record<string, string> = {
     pending: "pending",
@@ -151,6 +155,7 @@ function translateOrderStatus(status: string) {
   return map[status] || status
 }
 
+// Nacitanie pouzivatelov
 async function loadUsers(page = 1) {
   const result = await adminGetAllUsers(page, usersPerPage);
   users.value = result.users;
@@ -170,6 +175,7 @@ async function prevUsersPage() {
   }
 }
 
+// Nacitanie admin dat
 async function loadAdminData() {
   loading.value = true
   loadError.value = ""
@@ -229,6 +235,7 @@ async function refreshTickets() {
   }
 }
 
+// Sprava pouzivatelov
 function openUserModal(user: any) {
   modalUser.value = { ...user }
   modalOpen.value = true
@@ -255,6 +262,7 @@ function closeUserModal() {
   modalUser.value = null
 }
 
+// Ulozenie zmien pouzivatela
 async function saveUserChanges(userDraft: any) {
   if (!userDraft) return
   modalSaving.value = true
@@ -299,6 +307,7 @@ async function triggerPasswordReset(email: string) {
   }
 }
 
+// Zmena stavu objednavky
 async function changeOrderStatus(orderId: number, newStatus: string) {
   try {
     await adminUpdateOrderStatus(orderId, newStatus)
@@ -319,6 +328,7 @@ async function changeOrderStatus(orderId: number, newStatus: string) {
   }
 }
 
+// Mazanie sprav
 async function deleteMessage(messageId: number) {
   try {
     await adminDeleteContactMessage(messageId)

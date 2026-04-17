@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Zakladny modalny komponent
 import { watch } from 'vue'
 
 const props = withDefaults(

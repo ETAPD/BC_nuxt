@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Kontaktna stranka - formular a info
 useHead({
   title: "Kontakt | TradeProjekt",
   meta: [
@@ -6,6 +7,7 @@ useHead({
   ],
 });
 
+// Stav formulara
 const form = ref({
   name: "",
   email: "",
@@ -17,6 +19,7 @@ const submitted = ref(false);
 const loading = ref(false);
 const error = ref("");
 
+// Odoslanie formulara
 async function handleSubmit() {
   error.value = "";
   loading.value = true;
@@ -35,6 +38,7 @@ async function handleSubmit() {
   }
 }
 
+// Reset formulara
 function resetForm() {
   submitted.value = false;
   error.value = "";
@@ -44,7 +48,6 @@ function resetForm() {
 
 <template>
   <div class="contact">
-    <!-- Hero -->
     <section class="contact-hero section">
       <div class="container">
         <span class="hero-badge">Kontakt</span>
@@ -55,11 +58,9 @@ function resetForm() {
       </div>
     </section>
 
-    <!-- Contact Content -->
     <section class="contact-content section">
       <div class="container">
         <div class="contact-grid">
-          <!-- Info -->
           <div class="contact-info">
             <h2>Kontaktujte nás</h2>
             <p class="info-desc">
@@ -91,7 +92,6 @@ function resetForm() {
             </div>
           </div>
 
-          <!-- Form -->
           <div class="contact-form-wrapper card">
             <div v-if="submitted" class="success-message">
               <span class="success-icon">&#10003;</span>

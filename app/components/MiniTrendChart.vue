@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Mini trendovy graf (sparkline)
 import { computed } from 'vue'
 
 const props = withDefaults(

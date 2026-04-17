@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+// Tabulka drzani
 const props = defineProps<{
   holdings: any[]
 }>()

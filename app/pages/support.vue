@@ -27,7 +27,6 @@
         </div>
       </header>
 
-      <!-- Quick contact bar -->
       <div class="contact-cards">
         <div class="contact-card">
           <span class="contact-card-icon">📧</span>
@@ -73,7 +72,6 @@
         </button>
       </nav>
 
-      <!-- FAQ -->
       <section v-if="activeTab === 'faq'" class="faq-section">
         <div class="faq-grid">
           <div v-for="cat in faqCategories" :key="cat.title" class="faq-category">
@@ -92,7 +90,6 @@
         </div>
       </section>
 
-      <!-- Odoslať tiket -->
       <section v-if="activeTab === 'create'" class="ticket-section">
         <div class="ticket-section__header">
           <div>
@@ -163,7 +160,6 @@
         </form>
       </section>
 
-      <!-- Moje tikety -->
       <section v-if="activeTab === 'tickets'">
         <div v-if="!isLoggedIn" class="ticket-login-notice-standalone">
           <p>
@@ -178,7 +174,6 @@
         />
       </section>
 
-      <!-- Tips section -->
       <section class="tips-section">
         <h3>💡 Tipy pre rýchle riešenie</h3>
         <div class="tips-grid">
@@ -201,6 +196,7 @@
 </template>
 
 <script setup lang="ts">
+// Podpora - FAQ, tikety, kontakt
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { createTicket } from '../composables/useSupportTickets'
@@ -278,6 +274,7 @@ const faqs = [
   },
 ]
 
+// FAQ data
 const faqCategories = [
   {
     icon: '📈',
@@ -383,7 +380,6 @@ onMounted(async () => {
       isLoggedIn.value = true
     }
   } catch {
-    // not logged in
   }
 })
 

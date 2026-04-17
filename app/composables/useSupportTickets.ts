@@ -1,3 +1,4 @@
+// Vytvorenie support tiketu
 export async function createTicket(
   userId: number,
   subject: string,
@@ -22,6 +23,7 @@ export async function createTicket(
   return ticket;
 }
 
+// Tikety pouzivatela
 export async function getUserTickets(userId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -33,6 +35,7 @@ export async function getUserTickets(userId: number) {
   return data ?? [];
 }
 
+// Spravy tiketu
 export async function getTicketMessages(ticketId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -44,6 +47,7 @@ export async function getTicketMessages(ticketId: number) {
   return data ?? [];
 }
 
+// Odoslanie spravy v tikete
 export async function sendTicketMessage(
   ticketId: number,
   senderRole: "user" | "admin",
@@ -64,6 +68,7 @@ export async function sendTicketMessage(
     .eq("ticket_id", ticketId);
 }
 
+// Zatvorenie tiketu
 export async function closeTicket(ticketId: number) {
   const supabase = useSupabase();
   const { error } = await supabase
@@ -73,6 +78,7 @@ export async function closeTicket(ticketId: number) {
   if (error) throw error;
 }
 
+// Znovuotvorenie tiketu
 export async function reopenTicket(ticketId: number) {
   const supabase = useSupabase();
   const { error } = await supabase

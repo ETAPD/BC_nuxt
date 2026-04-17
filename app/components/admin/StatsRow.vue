@@ -28,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+// Riadok statistik admin panelu
 const props = defineProps<{
   usersCount: number
   portfoliosCount: number

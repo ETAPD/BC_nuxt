@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Navigacny panel - notifikacie, profil, menu
 const router = useRouter();
 const route = useRoute();
 const supabase = useSupabase();
@@ -10,7 +11,6 @@ const props = defineProps<{
   userProfilePicture?: string;
 }>();
 
-/* Fallback user data if not passed as props */
 const localName = ref(props.userName || "");
 const localInitials = ref(props.userInitials || "");
 const localEmail = ref(props.userEmail || "");
@@ -18,7 +18,6 @@ const localProfilePicture = ref(props.userProfilePicture || "");
 const isAdmin = ref(false);
 const showProfileMenu = ref(false);
 
-/* Notification state */
 const showNotifications = ref(false);
 const notifications = ref<any[]>([]);
 const unreadCount = computed(
@@ -34,16 +33,19 @@ const displayPicture = computed(
   () => props.userProfilePicture || localProfilePicture.value || "",
 );
 
+// Navigacne linky
 const navLinks = [
   { path: "/dashboard", label: "Dashboard" },
   { path: "/markets", label: "Trhy" },
   { path: "/history", label: "História" },
 ];
 
+// Aktivny odkaz
 function isActive(path: string) {
   return route.path === path;
 }
 
+// Prepinanie menu
 function toggleProfileMenu() {
   showProfileMenu.value = !showProfileMenu.value;
   if (showProfileMenu.value) showNotifications.value = false;
@@ -54,6 +56,7 @@ function toggleNotifications() {
   if (showNotifications.value) showProfileMenu.value = false;
 }
 
+// Navigacne funkcie
 function goToProfile() {
   showProfileMenu.value = false;
   router.push("/profile");
@@ -74,12 +77,14 @@ function goToAdmin() {
   router.push("/admin");
 }
 
+// Odhlasenie
 async function handleSignOut() {
   showProfileMenu.value = false;
   await signOut();
   router.push("/login");
 }
 
+// Notifikacie
 function markAsRead(id: number) {
   const n = notifications.value.find((n) => n.id === id);
   if (n) n.read = true;
@@ -91,14 +96,13 @@ function markAllRead() {
   saveNotifications();
 }
 
-/* Persist notifications in localStorage keyed by user email */
+// Nacitanie notifikacii
 function loadNotifications() {
   try {
     const key = `notifications_${displayEmail.value}`;
     const raw = localStorage.getItem(key);
     if (raw) notifications.value = JSON.parse(raw);
   } catch {
-    /* ignore */
   }
 }
 
@@ -107,10 +111,10 @@ function saveNotifications() {
     const key = `notifications_${displayEmail.value}`;
     localStorage.setItem(key, JSON.stringify(notifications.value));
   } catch {
-    /* ignore */
   }
 }
 
+// Pridanie notifikacie
 function addNotification(title: string, message: string) {
   notifications.value.unshift({
     id: Date.now(),
@@ -123,7 +127,6 @@ function addNotification(title: string, message: string) {
   saveNotifications();
 }
 
-/* Login notification */
 onMounted(async () => {
   if (!props.userName) {
     try {
@@ -137,14 +140,12 @@ onMounted(async () => {
         localProfilePicture.value = dbUser.profile_picture || "";
       }
     } catch {
-      /* silent */
     }
   }
   checkIsAdmin().then((v) => (isAdmin.value = v));
 
   loadNotifications();
 
-  /* Check if this is a fresh login — add welcome notification */
   const loginKey = `last_login_notif_${displayEmail.value}`;
   const lastNotif = localStorage.getItem(loginKey);
   const now = Date.now();
@@ -157,7 +158,6 @@ onMounted(async () => {
   }
 });
 
-/* Listen for order fill events from supabase realtime (trades insert) */
 let realtimeSub: any = null;
 
 onMounted(() => {
@@ -183,7 +183,6 @@ onUnmounted(() => {
   if (realtimeSub) supabase.removeChannel(realtimeSub);
 });
 
-/* Close menus on outside click */
 function handleOutsideClick(e: MouseEvent) {
   const target = e.target as HTMLElement;
   if (!target.closest(".nav-user-section")) {
@@ -216,7 +215,6 @@ onUnmounted(() => document.removeEventListener("click", handleOutsideClick));
       </nav>
 
       <div class="nav-user-section">
-        <!-- Notification Bell -->
         <button
           class="notif-bell"
           @click.stop="toggleNotifications"
@@ -228,7 +226,6 @@ onUnmounted(() => document.removeEventListener("click", handleOutsideClick));
           }}</span>
         </button>
 
-        <!-- Notification Dropdown -->
         <div v-if="showNotifications" class="notif-dropdown" @click.stop>
           <div class="notif-header">
             <span class="notif-title">Oznámenia</span>
@@ -262,7 +259,6 @@ onUnmounted(() => document.removeEventListener("click", handleOutsideClick));
           </div>
         </div>
 
-        <!-- Profile Trigger -->
         <div class="profile-trigger" @click.stop="toggleProfileMenu">
           <img
             v-if="displayPicture"
@@ -276,7 +272,6 @@ onUnmounted(() => document.removeEventListener("click", handleOutsideClick));
           <span class="profile-arrow">&#9662;</span>
         </div>
 
-        <!-- Profile Dropdown -->
         <div v-if="showProfileMenu" class="profile-dropdown" @click.stop>
           <div class="profile-dropdown-header">
             <img

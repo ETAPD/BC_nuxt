@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Stranka O nas - tim a hodnoty
 useHead({
   title: "O nás | TradeProjekt",
   meta: [
@@ -6,6 +7,7 @@ useHead({
   ],
 });
 
+// Data timu
 const team = [
   { name: 'Alex Carter', role: 'CEO a zakladateľ', initials: 'AC' },
   { name: 'Sarah Kim', role: 'Hlavná dizajnérka', initials: 'SK' },
@@ -13,6 +15,7 @@ const team = [
   { name: 'Maya Patel', role: 'Hlavná vývojárka', initials: 'MP' },
 ]
 
+// Hodnoty spolocnosti
 const values = [
   {
     title: 'Inovácia',
@@ -28,7 +31,6 @@ const values = [
 
 <template>
   <div class="about">
-    <!-- Hero -->
     <section class="about-hero section">
       <div class="container">
         <span class="hero-badge">O nás</span>
@@ -40,7 +42,6 @@ const values = [
       </div>
     </section>
 
-    <!-- Values -->
     <section class="values section">
       <div class="container">
         <h2 class="section-title">Naše hodnoty</h2>
@@ -54,7 +55,6 @@ const values = [
       </div>
     </section>
 
-    <!-- Team -->
     <section class="team section">
       <div class="container">
         <h2 class="section-title">Spoznajte tím</h2>

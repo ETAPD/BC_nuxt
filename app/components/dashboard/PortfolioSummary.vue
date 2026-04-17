@@ -30,6 +30,7 @@
 </template>
 
 <script setup lang="ts">
+// Sumar portfolia - hodnota, hotovost, zmena
 import { computed } from 'vue'
 
 const props = defineProps<{

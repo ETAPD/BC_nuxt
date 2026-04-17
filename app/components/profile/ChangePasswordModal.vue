@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+// Modal na zmenu hesla
 import { ref, watch } from 'vue'
 
 const props = defineProps<{

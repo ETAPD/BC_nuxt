@@ -1,3 +1,4 @@
+// Ziskanie pouzivatela z databazy
 export async function getDbUser() {
   const supabase = useSupabase();
   const {
@@ -54,6 +55,7 @@ export async function getDbUser() {
   return data;
 }
 
+// Aktualizacia profilu
 export async function updateUserProfile(
   userId: number,
   updates: {
@@ -73,12 +75,13 @@ export async function updateUserProfile(
   if (error) throw error;
 }
 
+// Upload profiloveho obrazku
 export async function uploadProfilePicture(
   userId: number,
   file: File,
 ): Promise<string> {
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-  const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+  const MAX_SIZE = 5 * 1024 * 1024;
   if (!ALLOWED_TYPES.includes(file.type)) {
     throw new Error('Povolené sú len obrázky (JPEG, PNG, GIF, WebP).');
   }

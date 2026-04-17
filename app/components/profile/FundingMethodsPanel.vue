@@ -68,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+// Platobne metody
 import { ref } from 'vue'
 
 defineProps<{

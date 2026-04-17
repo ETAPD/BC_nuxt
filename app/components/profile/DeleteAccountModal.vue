@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+// Modal na zmazanie uctu
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps<{

@@ -1,3 +1,4 @@
+// Odoslanie kontaktnej spravy
 export async function submitContactMessage(msg: {
   name: string;
   email: string;

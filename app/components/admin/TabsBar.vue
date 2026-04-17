@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+// Panel tabov admin rozhrania
 const tabs = [
   { key: 'users', label: 'Používatelia', icon: '👤' },
   { key: 'portfolios', label: 'Portfóliá', icon: '💼' },

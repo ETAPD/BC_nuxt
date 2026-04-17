@@ -1,3 +1,4 @@
+// Vytvorenie admin notifikacie
 export async function createAdminNotification(
   userId: number,
   title: string,
@@ -10,6 +11,7 @@ export async function createAdminNotification(
   if (error) throw error;
 }
 
+// Ziskanie notifikacii pouzivatela
 export async function getUserNotifications(userId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -21,6 +23,7 @@ export async function getUserNotifications(userId: number) {
   return data ?? [];
 }
 
+// Oznacenie notifikacie ako precitanej
 export async function markNotificationRead(id: number) {
   const supabase = useSupabase();
   const { error } = await supabase

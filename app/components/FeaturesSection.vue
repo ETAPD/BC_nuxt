@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// Sekcia funkcii platformy - statistiky a karty
+// Statistiky
 const stats = [
   { value: '99,9%', label: 'Dostupnosť' },
   { value: '<10ms', label: 'Vykonanie' },
@@ -6,6 +8,7 @@ const stats = [
   { value: '24/7', label: 'Trhy' },
 ]
 
+// Funkcie platformy
 const features = [
   {
     icon: '\u{1F4C8}',

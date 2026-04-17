@@ -158,6 +158,7 @@
 </template>
 
 <script setup lang="ts">
+// Detailny modal aktiva s grafom
 import { ref, computed, watch } from 'vue'
 import { getPriceHistory } from '~/composables/useAssets'
 

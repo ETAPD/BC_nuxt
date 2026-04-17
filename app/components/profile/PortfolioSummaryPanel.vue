@@ -31,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+// Prehlad portfolia
 defineProps<{
   holdingsTotal?: number
   investedAmount?: number

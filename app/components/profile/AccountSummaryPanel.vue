@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+// Sumar uctu a portfolia
 defineProps<{
   user?: Record<string, any> | null
   portfolioCount?: number

@@ -1,10 +1,12 @@
 <script setup lang="ts">
+// Hero sekcia - ticker, animovany pocitac, CTA
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const scrollTo = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 }
 
+// Ticker data
 const tickerItems = [
   { symbol: 'BTC/USD', price: '67,842.50', change: '+3.24%', up: true },
   { symbol: 'ETH/USD', price: '3,521.80', change: '+1.87%', up: true },
@@ -14,10 +16,12 @@ const tickerItems = [
   { symbol: 'GOLD', price: '2,341.60', change: '+0.78%', up: true },
 ]
 
+// Animacia pocitadla
 const portfolioValue = ref(0)
 const targetValue = 1247835
 let animFrame: number
 
+// Animacia hodnoty portfolia
 function animateCounter() {
   const duration = 2000
   const start = performance.now()

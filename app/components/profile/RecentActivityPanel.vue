@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+// Posledna aktivita
 defineProps<{
   items?: any[]
 }>()

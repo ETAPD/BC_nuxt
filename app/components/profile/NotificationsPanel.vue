@@ -64,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+// Nastavenia notifikacii
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps<{

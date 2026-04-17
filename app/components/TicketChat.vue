@@ -64,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+// Chat komponent pre support tikety
 import { ref, watch, onMounted, nextTick, useTemplateRef } from 'vue'
 
 const props = defineProps<{

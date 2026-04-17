@@ -1,3 +1,4 @@
+// Zapis admin akcie do audit logu
 export async function logAdminAction(
   action: string,
   targetType: string,

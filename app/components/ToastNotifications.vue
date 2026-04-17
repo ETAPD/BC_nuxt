@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+// Toast notifikacie - zobrazenie sprav
 const { toasts, remove } = useToast();
 </script>
 

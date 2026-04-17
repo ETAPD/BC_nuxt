@@ -126,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+// Formular na zadanie objednavky
 import { ref, computed, watch } from 'vue'
 
 type OrderSide = 'BUY' | 'SELL'

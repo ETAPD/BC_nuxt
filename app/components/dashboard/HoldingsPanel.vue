@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+// Tabulka drzanych aktiv
 import { ref, computed } from 'vue'
 
 const props = defineProps<{

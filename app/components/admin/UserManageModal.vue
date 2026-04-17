@@ -78,6 +78,7 @@
 </template>
 
 <script setup lang="ts">
+// Modal na spravu pouzivatela
 import { ref, watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{

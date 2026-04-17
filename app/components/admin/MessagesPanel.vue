@@ -39,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+// Kontaktne spravy
 const props = defineProps<{
   messages: any[]
 }>()

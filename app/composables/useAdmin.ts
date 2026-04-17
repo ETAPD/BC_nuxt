@@ -1,3 +1,4 @@
+// Ziskanie vsetkych pouzivatelov
 export async function adminGetAllUsers(page = 1, perPage = 50) {
   const supabase = useSupabase();
   const from = (page - 1) * perPage;
@@ -12,6 +13,7 @@ export async function adminGetAllUsers(page = 1, perPage = 50) {
   return { users: data ?? [], total: count ?? 0 };
 }
 
+// Vsetky portfolia
 export async function adminGetAllPortfolios() {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -22,6 +24,7 @@ export async function adminGetAllPortfolios() {
   return data ?? [];
 }
 
+// Uprava pouzivatela
 export async function adminUpdateUser(
   userId: number,
   updates: Record<string, any>,
@@ -34,6 +37,7 @@ export async function adminUpdateUser(
   if (error) throw error;
 }
 
+// Vsetky objednavky
 export async function adminGetAllOrders() {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -47,6 +51,7 @@ export async function adminGetAllOrders() {
   return data ?? [];
 }
 
+// Vsetky obchody
 export async function adminGetAllTrades() {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -58,6 +63,7 @@ export async function adminGetAllTrades() {
   return data ?? [];
 }
 
+// Vsetky drzania
 export async function adminGetAllHoldings() {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -68,6 +74,7 @@ export async function adminGetAllHoldings() {
   return data ?? [];
 }
 
+// Zmena stavu objednavky
 export async function adminUpdateOrderStatus(orderId: number, status: string) {
   const supabase = useSupabase();
   const { error } = await supabase
@@ -77,6 +84,7 @@ export async function adminUpdateOrderStatus(orderId: number, status: string) {
   if (error) throw error;
 }
 
+// Zmena stavu pouzivatela
 export async function adminUpdateUserStatus(userId: number, status: string) {
   const supabase = useSupabase();
   const { error } = await supabase
@@ -86,6 +94,7 @@ export async function adminUpdateUserStatus(userId: number, status: string) {
   if (error) throw error;
 }
 
+// Kontaktne spravy
 export async function adminGetContactMessages() {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -96,6 +105,7 @@ export async function adminGetContactMessages() {
   return data ?? [];
 }
 
+// Zmazanie kontaktnej spravy
 export async function adminDeleteContactMessage(id: number) {
   const supabase = useSupabase();
   const { error } = await supabase
@@ -105,6 +115,7 @@ export async function adminDeleteContactMessage(id: number) {
   if (error) throw error;
 }
 
+// Vsetky tikety
 export async function adminGetAllTickets() {
   const supabase = useSupabase();
   const { data, error } = await supabase

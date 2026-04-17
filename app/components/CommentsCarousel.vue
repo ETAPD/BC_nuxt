@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Karusel recenzii pouzivatelov
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 interface Comment {
@@ -10,6 +11,7 @@ interface Comment {
   created_at: string
 }
 
+// Data recenzii
 const MOCK_COMMENTS: Comment[] = [
   { id: 1, author: 'Alex Novak', role: 'Day Trader', content: 'Platform execution is lightning fast. My scalping strategy improved immediately. The charts and order flow are top-notch.', avatar_url: null, created_at: '2026-03-18T12:00:00Z' },
   { id: 2, author: 'Maya Chen', role: 'Portfolio Manager', content: 'Clean dashboards and reliable data. Managing client allocations is much easier now. The watchlist features save me hours.', avatar_url: null, created_at: '2026-03-16T09:30:00Z' },

@@ -1,3 +1,4 @@
+// Ziskanie platobnych metod
 export async function getFundingMethods(userId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -10,6 +11,7 @@ export async function getFundingMethods(userId: number) {
   return data ?? [];
 }
 
+// Pridanie platobnej metody
 export async function addFundingMethod(
   userId: number,
   method: {
@@ -29,6 +31,7 @@ export async function addFundingMethod(
   if (error) throw error;
 }
 
+// Odstranenie platobnej metody
 export async function removeFundingMethod(fundingId: number) {
   const supabase = useSupabase();
   const { error } = await supabase

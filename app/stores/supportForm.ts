@@ -1,3 +1,4 @@
+// Store pre stav support formulara
 export const useSupportFormStore = defineStore("supportForm", () => {
   const activeTab = ref("faq");
   const selectedSubject = ref("");

@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+// Modal na upravu objednavky
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps<{

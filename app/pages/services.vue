@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Sluzby a cenove plany
 useHead({
   title: "Členstvo | TradeProjekt",
   meta: [
@@ -6,6 +7,7 @@ useHead({
   ],
 });
 
+// Typy
 interface PlanDetail {
   name: string;
   price: string;
@@ -16,6 +18,7 @@ interface PlanDetail {
   cta: string;
 }
 
+// Cenove plany
 const plans: PlanDetail[] = [
   {
     name: "Zadarmo",
@@ -73,6 +76,7 @@ interface PlatformFeature {
   desc: string;
 }
 
+// Funkcie platformy
 const platformFeatures: PlatformFeature[] = [
   {
     icon: "&#128200;",
@@ -109,7 +113,6 @@ const platformFeatures: PlatformFeature[] = [
 
 <template>
   <div class="services">
-    <!-- Hero -->
     <section class="services-hero section">
       <div class="container">
         <span class="hero-badge">Členské plány</span>
@@ -125,7 +128,6 @@ const platformFeatures: PlatformFeature[] = [
       </div>
     </section>
 
-    <!-- Plans Grid -->
     <section class="plans-section section">
       <div class="container">
         <div class="plans-grid">
@@ -160,7 +162,6 @@ const platformFeatures: PlatformFeature[] = [
       </div>
     </section>
 
-    <!-- Platform Features -->
     <section class="features-section section">
       <div class="container">
         <h2 class="section-title">Čo je zahrnuté</h2>
@@ -182,7 +183,6 @@ const platformFeatures: PlatformFeature[] = [
       </div>
     </section>
 
-    <!-- How It Works -->
     <section class="process section">
       <div class="container">
         <h2 class="section-title">Ako to funguje</h2>
@@ -225,7 +225,6 @@ const platformFeatures: PlatformFeature[] = [
       </div>
     </section>
 
-    <!-- CTA -->
     <section class="cta section">
       <div class="container">
         <div class="cta-box">

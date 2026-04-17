@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+// Modal na upravu profilu
 import { ref, watch } from 'vue'
 
 const props = defineProps<{

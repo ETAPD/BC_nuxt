@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Sekcia sluzieb - plany a proces
 const router = useRouter();
 
 function goToDashboard() {
@@ -15,6 +16,7 @@ interface Plan {
   cta: string;
 }
 
+// Cenove plany
 const plans: Plan[] = [
   {
     name: "Zadarmo",
@@ -65,6 +67,7 @@ const plans: Plan[] = [
   },
 ];
 
+// Kroky procesu
 const steps = [
   {
     num: "01",

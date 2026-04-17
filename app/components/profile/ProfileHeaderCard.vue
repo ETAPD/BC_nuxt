@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+// Hlavicka profilu s profilovym obrazkom
 defineProps<{
   user?: Record<string, any> | null
   uploadingPicture?: boolean

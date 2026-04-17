@@ -1,3 +1,4 @@
+// Debounce funkcia
 export function useDebounce<T extends (...args: any[]) => any>(
   fn: T,
   delay = 300,
@@ -19,6 +20,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
   return { debounced, cancel };
 }
 
+// Debounce ref s oneskorenim
 export function useDebouncedRef(initialValue = "", delay = 300) {
   const value = ref(initialValue);
   const debounced = ref(initialValue);

@@ -54,7 +54,6 @@
 
     <div v-if="chatOpen && activeTicket" class="ticket-modal-backdrop" @click.self="closeChat">
       <div class="ticket-modal" @click.stop>
-        <!-- Ľavý panel: info o používateľovi -->
         <aside class="ticket-sidebar">
           <div class="ticket-sidebar__avatar">
             <img
@@ -95,7 +94,6 @@
           </button>
         </aside>
 
-        <!-- Pravý panel: chat -->
         <div class="ticket-chat-area">
           <header class="ticket-chat-area__header">
             <h3>{{ activeTicket.subject || 'Bez predmetu' }}</h3>
@@ -216,6 +214,7 @@
 </template>
 
 <script setup lang="ts">
+// Panel support tiketov s chatom
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { adminGetAllTickets } from '../../composables/useAdmin'
 import {
@@ -440,7 +439,7 @@ async function reopenCurrentTicket() {
 </script>
 
 <style scoped>
-/* ── Toolbar ─────────────────────────────────────────── */
+/* Toolbar */
 .tickets-toolbar {
   display: grid;
   grid-template-columns: 1fr 230px;
@@ -483,7 +482,7 @@ async function reopenCurrentTicket() {
   border-color: var(--color-accent);
 }
 
-/* ── Ticket list ─────────────────────────────────────── */
+/* Zoznam tiketov */
 .tickets-list {
   display: flex;
   flex-direction: column;
@@ -551,7 +550,7 @@ async function reopenCurrentTicket() {
   font-size: 0.84rem;
 }
 
-/* ── Status badge ────────────────────────────────────── */
+/* Status badge */
 .ticket-status {
   display: inline-flex;
   align-items: center;
@@ -571,7 +570,7 @@ async function reopenCurrentTicket() {
   color: var(--color-text-muted);
 }
 
-/* ── Modal / backdrop ────────────────────────────────── */
+/* Modal */
 .ticket-modal-backdrop,
 .close-reason-backdrop {
   position: fixed;
@@ -597,7 +596,7 @@ async function reopenCurrentTicket() {
   border-radius: var(--radius-md);
 }
 
-/* ── Sidebar ─────────────────────────────────────────── */
+/* Sidebar */
 .ticket-sidebar {
   background: var(--color-background-soft);
   border-right: 1px solid var(--color-border);
@@ -688,7 +687,7 @@ async function reopenCurrentTicket() {
   border-color: var(--color-accent);
 }
 
-/* ── Chat area ───────────────────────────────────────── */
+/* Chat */
 .ticket-chat-area {
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -720,7 +719,7 @@ async function reopenCurrentTicket() {
   gap: 0.75rem;
 }
 
-/* ── Thread bubbles ──────────────────────────────────── */
+/* Bubliny sprav */
 .ticket-thread {
   overflow: auto;
   padding: 1rem 1.5rem;
@@ -781,7 +780,7 @@ async function reopenCurrentTicket() {
   color: var(--color-text);
 }
 
-/* ── Close reason modal ──────────────────────────────── */
+/* Modal zatvorenia */
 .close-reason-modal {
   width: min(540px, 100%);
   background: var(--color-background);
@@ -796,7 +795,7 @@ async function reopenCurrentTicket() {
   min-height: 120px;
 }
 
-/* ── Responsive ──────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 760px) {
   .tickets-toolbar {
     grid-template-columns: 1fr;

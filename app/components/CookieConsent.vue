@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Cookie suhlas banner
 import { ref, onMounted } from 'vue'
 
 const visible = ref(false)

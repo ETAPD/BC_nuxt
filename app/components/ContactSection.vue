@@ -1,12 +1,15 @@
 <script setup lang="ts">
+// Kontaktna sekcia - formular a informacie
 import { ref } from "vue";
 
 const form = ref({ name: "", email: "", subject: "", message: "" });
 const submitted = ref(false);
 
+// Odoslanie formulara
 function handleSubmit() {
   submitted.value = true;
 }
+// Reset formulara
 function resetForm() {
   submitted.value = false;
   form.value = { name: "", email: "", subject: "", message: "" };

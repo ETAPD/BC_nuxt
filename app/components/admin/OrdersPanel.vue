@@ -164,6 +164,7 @@
 </template>
 
 <script setup lang="ts">
+// Tabulka objednavok
 import { ref, computed } from 'vue'
 
 const props = defineProps<{

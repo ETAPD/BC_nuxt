@@ -38,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+// Bezpecnostne nastavenia
 defineEmits<{
   'open-password': []
   export: []

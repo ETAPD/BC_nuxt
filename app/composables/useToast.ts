@@ -11,6 +11,7 @@ export interface Toast {
 const toasts = ref<Toast[]>([]);
 let nextId = 0;
 
+// Toast notifikacie composable
 export function useToast() {
   function show(message: string, type: ToastType = "info", duration = 4000) {
     const id = nextId++;

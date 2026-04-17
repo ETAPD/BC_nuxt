@@ -103,6 +103,7 @@
 </template>
 
 <script setup lang="ts">
+// Profil pouzivatela - nastavenia, financovanie, bezpecnost
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 
 definePageMeta({ middleware: "auth" });
@@ -117,6 +118,7 @@ useHead({
 
 const router = useRouter()
 
+// Stav nacitavania
 const loading = ref(true)
 const loadError = ref("")
 const successMsg = ref("")
@@ -129,6 +131,7 @@ const openOrdersCount = ref(0)
 const completedTradesCount = ref(0)
 const portfolioCount = ref(1)
 const recentActivity = ref<any[]>([])
+// Preferencie notifikacii
 const prefs = ref({
   notify_price_alerts: true,
   notify_order_filled: true,
@@ -147,6 +150,7 @@ const editSaving = ref(false)
 const uploadingPicture = ref(false)
 const adminNotifications = ref<any[]>([])
 
+// Ovladanie modalov
 const anyModalOpen = computed(() => {
   return showEditProfile.value || showPasswordModal.value || showDeleteModal.value
 })
@@ -185,6 +189,7 @@ watch(anyModalOpen, (open) => {
   document.body.style.overflow = open ? "hidden" : ""
 }, { immediate: true })
 
+// Flash sprava
 function flash(message: string) {
   successMsg.value = message
   if (successTimer.value) {
@@ -203,6 +208,7 @@ function formatCurrency(value: any) {
   })
 }
 
+// Nacitanie profilu
 async function loadProfile() {
   loading.value = true
   loadError.value = ""
@@ -282,6 +288,7 @@ async function loadProfile() {
   }
 }
 
+// Upload profiloveho obrazku
 async function handlePictureUpload(file: File) {
   if (!file || !user.value) return
   uploadingPicture.value = true
@@ -305,6 +312,7 @@ function handleEditProfileVisibility(value: boolean) {
   showEditProfile.value = value
 }
 
+// Ulozenie profilu
 async function saveProfile(payload: any) {
   if (!user.value || !payload?.full_name?.trim()) return
   editSaving.value = true
@@ -336,6 +344,7 @@ async function saveProfile(payload: any) {
   }
 }
 
+// Ulozenie preferencii
 async function savePreferences(nextPrefs: any) {
   if (!user.value) return
   prefsSaving.value = true
@@ -358,10 +367,10 @@ async function handleMarkNotificationRead(notification: any) {
       n.id === notification.id ? { ...n, is_read: true } : n,
     )
   } catch {
-    // silent
   }
 }
 
+// Financne metody
 async function handleAddFunding(payload: any) {
   if (!user.value || !payload?.label?.trim()) return
   fundingSaving.value = true
@@ -388,6 +397,7 @@ async function handleRemoveFunding(id: number) {
   }
 }
 
+// Zmena hesla
 async function handleChangePassword(currentPassword: string, newPassword: string) {
   passwordSaving.value = true
   try {
@@ -401,11 +411,13 @@ async function handleChangePassword(currentPassword: string, newPassword: string
   }
 }
 
+// Odhlasenie
 async function handleLogout() {
   await signOut()
   router.push("/login")
 }
 
+// Zmazanie uctu
 async function handleDeleteAccount() {
   deleteSaving.value = true
   try {
@@ -419,6 +431,7 @@ async function handleDeleteAccount() {
   }
 }
 
+// Export dat
 async function handleExport() {
   try {
     await exportUserData()

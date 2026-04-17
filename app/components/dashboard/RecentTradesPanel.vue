@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+// Posledne obchody
 import { computed } from 'vue'
 
 const props = defineProps<{

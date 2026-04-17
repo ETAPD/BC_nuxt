@@ -50,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+// Tabulka portfolii
 const props = defineProps<{
   portfolios: any[]
 }>()

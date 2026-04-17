@@ -1,3 +1,4 @@
+// Ziskanie otvorenych objednavok
 export async function getOpenOrders(portfolioId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -11,6 +12,7 @@ export async function getOpenOrders(portfolioId: number) {
   return data ?? [];
 }
 
+// Posledne obchody
 export async function getRecentTrades(portfolioId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -24,6 +26,7 @@ export async function getRecentTrades(portfolioId: number) {
   return data ?? [];
 }
 
+// Vsetky obchody
 export async function getAllTrades(portfolioId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -36,6 +39,7 @@ export async function getAllTrades(portfolioId: number) {
   return data ?? [];
 }
 
+// Obchody pre konkretny aktiv
 export async function getTradesForAsset(portfolioId: number, assetId: number) {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -50,6 +54,7 @@ export async function getTradesForAsset(portfolioId: number, assetId: number) {
   return data ?? [];
 }
 
+// Zadanie objednavky
 export async function placeOrder(order: {
   portfolio_id: number;
   asset_id: number;
@@ -79,6 +84,7 @@ export async function placeOrder(order: {
   return data;
 }
 
+// Zrusenie objednavky
 export async function cancelOrder(orderId: number) {
   const supabase = useSupabase();
   const { error } = await supabase
@@ -89,6 +95,7 @@ export async function cancelOrder(orderId: number) {
   if (error) throw error;
 }
 
+// Uprava objednavky
 export async function updateOrder(
   orderId: number,
   updates: {

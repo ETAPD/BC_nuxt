@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Historia obchodov a objednavok
 definePageMeta({ middleware: "auth" });
 
 useHead({
@@ -10,6 +11,7 @@ useHead({
 });
 
 const router = useRouter();
+// Stav nacitavania
 const loading = ref(true);
 const trades = ref<any[]>([]);
 const orders = ref<any[]>([]);
@@ -36,12 +38,12 @@ onMounted(async () => {
     trades.value = t;
     orders.value = o;
   } catch {
-    // silent
   } finally {
     loading.value = false;
   }
 });
 
+// Filtrovane obchody
 const filteredTrades = computed(() => {
   let result = trades.value;
   if (filterType.value !== "all") {
@@ -62,6 +64,7 @@ const filteredTrades = computed(() => {
   return result;
 });
 
+// Statistiky obchodov
 const totalBuyVolume = computed(() =>
   filteredTrades.value
     .filter((t: any) => t.trade_type === "BUY")
@@ -83,6 +86,7 @@ const sellCount = computed(
   () => filteredTrades.value.filter((t: any) => t.trade_type === "SELL").length,
 );
 
+// Pomocne funkcie
 function formatCurrency(n: number) {
   return n.toLocaleString("sk-SK", { style: "currency", currency: "USD" });
 }
@@ -110,7 +114,6 @@ function formatDate(d: string) {
         Kompletný záznam všetkých vašich vykonaných obchodov
       </p>
 
-      <!-- Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <span class="stat-label">Celkové obchody</span>
@@ -140,7 +143,6 @@ function formatDate(d: string) {
         </div>
       </div>
 
-      <!-- Filters -->
       <div class="filter-bar">
         <input
           v-model="searchQuery"
@@ -170,7 +172,6 @@ function formatDate(d: string) {
         </div>
       </div>
 
-      <!-- Open Orders -->
       <section v-if="orders.length" class="panel">
         <h2 class="panel-title">Otvorené príkazy ({{ orders.length }})</h2>
         <div class="table-wrap">
@@ -209,7 +210,6 @@ function formatDate(d: string) {
         </div>
       </section>
 
-      <!-- Executed Trades -->
       <section class="panel">
         <h2 class="panel-title">
           Vykonané obchody ({{ filteredTrades.length }})

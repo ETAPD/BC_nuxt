@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Registracia pouzivatela - viac-krokovy formular
 useHead({
   title: "Registrácia | TradeProjekt",
   meta: [
@@ -9,6 +10,7 @@ useHead({
 
 const router = useRouter();
 
+// Stav krokov
 const step = ref(1);
 const form = ref({
   email: "",
@@ -23,6 +25,7 @@ const error = ref("");
 const loading = ref(false);
 const success = ref(false);
 
+// Vypocitane nazvy krokov
 const stepTitle = computed(() => {
   if (step.value === 1) return "Začnite";
   if (step.value === 2) return "Zabezpečte si účet";
@@ -35,10 +38,12 @@ const stepSubtitle = computed(() => {
   return "Povedzte nám niečo o sebe";
 });
 
+// Validacia
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// Navigacia medzi krokmi
 function nextStep() {
   error.value = "";
 
@@ -70,6 +75,7 @@ function prevStep() {
   if (step.value > 1) step.value--;
 }
 
+// Odoslanie registracie
 async function handleRegister() {
   error.value = "";
 
@@ -124,7 +130,6 @@ async function handleRegister() {
             <span class="brand-text">ApexMarkets</span>
           </div>
 
-          <!-- Step indicator -->
           <div v-if="!success" class="steps-indicator">
             <div
               class="step-dot"
@@ -155,7 +160,6 @@ async function handleRegister() {
           <p class="subtitle">{{ success ? "" : stepSubtitle }}</p>
         </div>
 
-        <!-- Step 1: Email -->
         <form
           v-if="!success && step === 1"
           @submit.prevent="nextStep"
@@ -184,7 +188,6 @@ async function handleRegister() {
           </div>
         </form>
 
-        <!-- Step 2: Password -->
         <form
           v-if="!success && step === 2"
           @submit.prevent="nextStep"
@@ -270,7 +273,6 @@ async function handleRegister() {
           </div>
         </form>
 
-        <!-- Step 3: Personal details -->
         <form
           v-if="!success && step === 3"
           @submit.prevent="handleRegister"
@@ -368,7 +370,6 @@ async function handleRegister() {
           </div>
         </form>
 
-        <!-- Success state -->
         <div v-if="success" class="success-box">
           <span class="success-icon">&#9993;</span>
           <p>

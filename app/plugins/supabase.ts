@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
+// Supabase plugin - klient, session timer, auth listener
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
 
@@ -14,7 +15,6 @@ export default defineNuxtPlugin(() => {
     },
   );
 
-  // Sign the user out after 1 hour of inactivity
   const SESSION_DURATION_MS = 60 * 60 * 1000;
 
   let sessionTimer: ReturnType<typeof setTimeout> | null = null;

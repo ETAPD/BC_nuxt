@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Domovska stranka - hero, platformove funkcie, recenzie, kontakt
 useHead({
   title: "TradeProjekt — Investičná platforma",
   meta: [
@@ -10,10 +11,12 @@ useHead({
 
 const router = useRouter();
 
+// Navigacia na dashboard
 function goToDashboard() {
   router.push("/dashboard");
 }
 
+// Typy
 type NavLink = {
   name: string;
   target: string;
@@ -38,6 +41,7 @@ type PlatformPoint = {
   description: string;
 };
 
+// Staticke data
 const navLinks: NavLink[] = [
   { name: "Domov", target: "hero" },
   { name: "Funkcie", target: "features" },
@@ -122,6 +126,7 @@ const heroSecondaryImage = "/assets/img/hero-trading.png";
 const platformImage = "/assets/img/Trading-account.png";
 const splitImage = "/assets/img/chart-trading.png";
 
+// Scroll na sekciu
 function scrollTo(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
@@ -1149,13 +1154,11 @@ main {
     grid-template-columns: 1fr;
   }
 
-  /* Prevent the feature image from growing too tall and overlapping text
-     when the layout stacks on narrower viewports */
   .feature-visual {
     aspect-ratio: auto;
     min-height: auto;
-    order: 2; /* place visual after content when stacked */
-    max-height: 420px; /* cap height to avoid overlap */
+    order: 2;
+    max-height: 420px;
     overflow: hidden;
   }
 
@@ -1168,11 +1171,10 @@ main {
   }
 
   .feature-content {
-    order: 1; /* ensure text appears before visual */
+    order: 1;
   }
 
   .feature-highlight {
-    /* use flex column when stacked so `order` works and text can sit above image */
     display: flex;
     flex-direction: column;
     gap: 1rem;

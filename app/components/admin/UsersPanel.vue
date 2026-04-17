@@ -51,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+// Tabulka pouzivatelov
 import { ref, computed } from 'vue'
 
 const props = defineProps<{

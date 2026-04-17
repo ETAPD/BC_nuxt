@@ -30,6 +30,7 @@
 </template>
 
 <script setup lang="ts">
+// Zoznam sledovanych aktiv
 import { ref, computed } from 'vue'
 
 const props = defineProps<{

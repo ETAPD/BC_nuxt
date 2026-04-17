@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// SVG cenovy graf s tooltipom a mrizkou
 import { ref, computed } from 'vue'
 
 const props = withDefaults(
@@ -27,6 +28,7 @@ const props = withDefaults(
 
 type PricePoint = { price: number; recorded_at: string }
 
+// Vypocet cien
 const priceValues = computed(() => props.prices.map((p) => p.price))
 const minPrice = computed(() => (priceValues.value.length ? Math.min(...priceValues.value) : 0))
 const maxPrice = computed(() => (priceValues.value.length ? Math.max(...priceValues.value) : 0))
@@ -50,6 +52,7 @@ const priceChangePct = computed(() => {
   return (((last.price - first.price) / first.price) * 100).toFixed(2)
 })
 
+// SVG cesty grafu
 const chartLinePath = computed(() => {
   const pts = props.prices
   if (pts.length < 2) return ''
@@ -73,6 +76,7 @@ const chartAreaPath = computed(() => {
   return `${chartLinePath.value} L${lastX},${baseY} L${props.padding},${baseY} Z`
 })
 
+// Mrizkove ciary
 const gridLines = computed(() => {
   const pts = props.prices
   if (pts.length < 2) return []
@@ -89,7 +93,7 @@ const gridLines = computed(() => {
   return lines
 })
 
-// Tooltip
+// Tooltip stav
 const tooltip = ref<{
   show: boolean
   x: number
@@ -100,6 +104,7 @@ const tooltip = ref<{
   changePct: string
 }>({ show: false, x: 0, y: 0, price: 0, date: '', change: 0, changePct: '0' })
 
+// Interakcia mysi
 function onMouseMove(event: MouseEvent) {
   if (!props.showTooltip) return
   const svg = event.currentTarget as SVGSVGElement
@@ -133,6 +138,7 @@ function onMouseLeave() {
   tooltip.value.show = false
 }
 
+// Formatovanie meny
 function formatCurrency(n: number) {
   return n.toLocaleString('sk-SK', { style: 'currency', currency: 'USD' })
 }
@@ -160,7 +166,6 @@ defineExpose({ tooltip, priceChange, priceChangePct, minPrice, maxPrice })
           <stop offset="100%" :stop-color="strokeColor" stop-opacity="0.02" />
         </linearGradient>
       </defs>
-      <!-- Grid lines -->
       <template v-if="showGridLines">
         <template v-for="(gl, gi) in gridLines" :key="'grid' + gi">
           <line
@@ -173,9 +178,7 @@ defineExpose({ tooltip, priceChange, priceChangePct, minPrice, maxPrice })
           />
         </template>
       </template>
-      <!-- Area fill -->
       <path :d="chartAreaPath" :fill="`url(#${gradientId})`" />
-      <!-- Line -->
       <path
         :d="chartLinePath"
         fill="none"
@@ -183,7 +186,6 @@ defineExpose({ tooltip, priceChange, priceChangePct, minPrice, maxPrice })
         stroke-width="2"
         stroke-linejoin="round"
       />
-      <!-- Tooltip crosshair -->
       <template v-if="showTooltip && tooltip.show">
         <line
           :x1="tooltip.x"
@@ -213,7 +215,6 @@ defineExpose({ tooltip, priceChange, priceChangePct, minPrice, maxPrice })
         />
       </template>
     </svg>
-    <!-- Grid price labels (right side) -->
     <div v-if="showGridLabels" class="chart-grid-labels">
       <div
         v-for="(gl, gi) in gridLines"
@@ -227,7 +228,6 @@ defineExpose({ tooltip, priceChange, priceChangePct, minPrice, maxPrice })
         </span>
       </div>
     </div>
-    <!-- Tooltip box -->
     <div
       v-if="showTooltip && tooltip.show"
       class="chart-tooltip"
@@ -241,7 +241,6 @@ defineExpose({ tooltip, priceChange, priceChangePct, minPrice, maxPrice })
       </span>
       <span class="ct-date">{{ tooltip.date }}</span>
     </div>
-    <!-- Simple min/max labels (optional slot override) -->
     <div v-if="!showGridLabels" class="chart-labels">
       <span>{{ formatCurrency(maxPrice) }}</span>
       <span>{{ formatCurrency(minPrice) }}</span>

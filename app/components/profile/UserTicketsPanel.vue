@@ -154,6 +154,7 @@
 </template>
 
 <script setup lang="ts">
+// Tikety pouzivatela
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import {
   createTicket,

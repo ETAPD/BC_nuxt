@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Prihlasenie pouzivatela
 useHead({
   title: "Prihlásenie | TradeProjekt",
   meta: [
@@ -9,6 +10,7 @@ useHead({
 
 const router = useRouter();
 
+// Stav formulara
 const form = ref({
   email: "",
   password: "",
@@ -16,6 +18,7 @@ const form = ref({
 const error = ref("");
 const loading = ref(false);
 
+// Spracovanie prihlasenia
 async function handleLogin() {
   error.value = "";
   loading.value = true;

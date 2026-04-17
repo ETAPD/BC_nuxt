@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Sekcia o nas - tim a hodnoty
 const team = [
   { name: 'Alex Carter', role: 'CEO a zakladateľ', initials: 'AC' },
   { name: 'Sarah Kim', role: 'Vedúca obchodovania', initials: 'SK' },

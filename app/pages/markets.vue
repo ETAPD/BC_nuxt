@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Trhy - zoznam aktiv, graf, spotlight karusel
 definePageMeta({ middleware: "auth" });
 
 useHead({
@@ -9,6 +10,7 @@ useHead({
   ],
 });
 
+// Stav nacitavania
 const loading = ref(true);
 const assets = ref<any[]>([]);
 const searchQuery = ref("");
@@ -21,13 +23,13 @@ watch(searchQuery, (val) => {
   _searchTimer = setTimeout(() => { debouncedSearch.value = val; }, 300);
 });
 
-// Selected asset (inline chart – no modal)
+// Vybrany aktiv a graf
 const selectedAsset = ref<any>(null);
 const selectedPrices = ref<any[]>([]);
 const selectedRange = ref<"1h" | "24h" | "7d" | "30d">("24h");
 const chartLoading = ref(false);
 
-// Spotlight carousel
+// Spotlight karusel
 const spotlightAssets = ref<any[]>([]);
 const spotlightPrices = ref<Record<string, any[]>>({});
 const spotlightIndex = ref(0);
@@ -85,6 +87,7 @@ const spotSummaryStats = computed(() => {
   };
 });
 
+// Nacitanie spotlight dat
 async function loadSpotlightData() {
   const pool =
     spotlightFilterType.value === "all"
@@ -108,6 +111,7 @@ async function loadSpotlightData() {
   spotlightLoading.value = false;
 }
 
+// Ovladanie spotlight cyklu
 function startSpotlightCycle() {
   stopSpotlightCycle();
   spotlightTimer = setInterval(() => {
@@ -141,6 +145,7 @@ const assetTypes = computed(() => {
   return ["all", ...Array.from(types)];
 });
 
+// Filtrovanie aktiv
 const filteredAssets = computed(() => {
   let result = assets.value;
   if (filterType.value !== "all") {
@@ -160,12 +165,10 @@ const filteredAssets = computed(() => {
 onMounted(async () => {
   try {
     assets.value = await getAssets();
-    // Auto-select first asset for chart
     if (assets.value.length) {
       selectAsset(assets.value[0]);
     }
   } catch {
-    // silent
   } finally {
     loading.value = false;
   }
@@ -175,7 +178,6 @@ onMounted(async () => {
     try {
       assets.value = await getAssets();
     } catch {
-      // silent
     }
   }, 30000);
 });
@@ -185,7 +187,6 @@ onUnmounted(() => {
   stopSpotlightCycle();
 });
 
-// Inline chart
 const chartWidth = 700;
 const chartHeight = 260;
 const chartPadding = 40;
@@ -231,7 +232,6 @@ const chartSummaryStats = computed(() => {
   };
 });
 
-// Chart tooltip ref (from PriceChart component)
 const mainChartRef = ref<InstanceType<typeof PriceChart> | null>(null);
 const mainChartTooltip = computed(
   () =>
@@ -246,6 +246,7 @@ const mainChartTooltip = computed(
     },
 );
 
+// Vyber aktiva a nacitanie cien
 async function selectAsset(asset: any) {
   selectedAsset.value = asset;
   await loadPriceData();
@@ -274,6 +275,7 @@ watch(selectedRange, () => {
   if (selectedAsset.value) loadPriceData();
 });
 
+// Formatovanie meny
 function formatCurrency(n: number) {
   return n.toLocaleString("sk-SK", { style: "currency", currency: "USD" });
 }
@@ -291,7 +293,6 @@ function formatCurrency(n: number) {
         </p>
       </div>
 
-      <!-- Spotlight Carousel -->
       <div class="spotlight-section">
         <div class="spotlight-header">
           <h2 class="spotlight-title">Cenový prehľad</h2>
@@ -422,9 +423,7 @@ function formatCurrency(n: number) {
         </div>
       </div>
 
-      <!-- Main content: Chart + Table side by side -->
       <div class="markets-content">
-        <!-- Left: Chart panel -->
         <div class="chart-panel">
           <div v-if="selectedAsset" class="chart-panel-header">
             <div class="chart-asset-info">
@@ -565,7 +564,6 @@ function formatCurrency(n: number) {
           </div>
         </div>
 
-        <!-- Right: Scrollable asset list -->
         <div class="list-panel">
           <div class="filter-bar">
             <input

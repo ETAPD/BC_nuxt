@@ -1,3 +1,4 @@
+// Ziskanie vsetkych aktiv
 export async function getAssets() {
   const supabase = useSupabase();
   const { data, error } = await supabase
@@ -11,6 +12,7 @@ export async function getAssets() {
   return data ?? [];
 }
 
+// Historia cien pre aktiv
 export async function getPriceHistory(
   assetId: number,
   range: "1h" | "24h" | "7d" | "30d" = "24h",

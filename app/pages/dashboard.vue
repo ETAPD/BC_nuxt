@@ -9,16 +9,16 @@
 
     <div v-if="isGuest" class="guest-banner">
       <p>
-        Prezeráte si dashboard ako <strong>hosť</strong>.
+        PrezerÃ¡te si dashboard ako <strong>hosÅ¥</strong>.
         <NuxtLink to="/register" class="guest-link">Zaregistrujte sa</NuxtLink>
         alebo
-        <NuxtLink to="/login" class="guest-link">prihláste sa</NuxtLink> pre
-        plný prístup.
+        <NuxtLink to="/login" class="guest-link">prihlÃ¡ste sa</NuxtLink> pre
+        plnÃ½ prÃ­stup.
       </p>
     </div>
 
     <div v-if="loading" class="dash-loading">
-      <p>Načítavam dashboard…</p>
+      <p>NaÄÃ­tavam dashboardâ€¦</p>
     </div>
     <div v-else-if="loadError" class="dash-error">
       <p>{{ loadError }}</p>
@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+// Dashboard - portfolio, objednavky, watchlist, obchody
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 definePageMeta({ middleware: "auth" });
@@ -100,11 +101,12 @@ definePageMeta({ middleware: "auth" });
 useHead({
   title: "Dashboard | TradeProjekt",
   meta: [
-    { name: "description", content: "Prehľad vášho investičného portfólia a obchodných aktivít." },
+    { name: "description", content: "PrehÄ¾ad vÃ¡Å¡ho investiÄnÃ©ho portfÃ³lia a obchodnÃ½ch aktivÃ­t." },
     { name: "robots", content: "noindex, nofollow" },
   ],
 });
 
+// Typy
 type DashboardAsset = any
 type DashboardHolding = any
 type DashboardOrder = any
@@ -118,6 +120,7 @@ type DashboardUserLimits = {
   can_use_stop_orders: boolean
 }
 
+// Stav nacitavania a UI
 const loading = ref(true)
 const loadError = ref("")
 const isGuest = ref(false)
@@ -139,6 +142,7 @@ const userLimits = ref<DashboardUserLimits>({
   can_export: false,
   can_use_stop_orders: false,
 })
+// ID portfolia a pouzivatela
 const portfolioId = ref(0)
 const currentUserId = ref(0)
 const refreshTimer = ref<ReturnType<typeof setInterval> | null>(null)
@@ -150,6 +154,7 @@ const orderSubmitting = ref(false)
 const orderSubmitError = ref("")
 const orderSubmitSuccess = ref(false)
 
+// Vypocitane hodnoty portfolia
 const holdingsTotal = computed(() => {
   return holdings.value.reduce(
     (sum: number, holding: DashboardHolding) => sum + (holding.value ?? 0),
@@ -162,18 +167,19 @@ const availableCash = computed(() => {
   return totalValue - holdingsTotal.value
 })
 
+// Nacitanie dat dashboardu
 async function loadDashboard() {
   try {
     const user = await getDbUser()
     if (!user) {
       isGuest.value = true
-      userName.value = "Hosť"
+      userName.value = "HosÅ¥"
       userInitials.value = "H"
       loading.value = false
       return
     }
 
-    userName.value = user.full_name || "Používateľ"
+    userName.value = user.full_name || "PouÅ¾Ã­vateÄ¾"
     userInitials.value = user.initials || "U"
     userEmail.value = user.email || ""
     userProfilePicture.value = user.profile_picture || ""
@@ -193,15 +199,15 @@ async function loadDashboard() {
         userLimits.value = limits
       }
     } catch {
-      // keep defaults
     }
   } catch (error: any) {
-    loadError.value = error?.message || "Nepodarilo sa načítať dashboard"
+    loadError.value = error?.message || "Nepodarilo sa naÄÃ­taÅ¥ dashboard"
   } finally {
     loading.value = false
   }
 }
 
+// Obnovenie dat
 async function refreshData() {
   try {
     if (!currentUserId.value) return
@@ -250,10 +256,10 @@ async function refreshData() {
     watchlist.value = watchlistData
     assets.value = assetsData
   } catch {
-    // silent refresh failure
   }
 }
 
+// Spracovanie objednavky
 async function handleSubmitOrder(payload: any) {
   if (!portfolioId.value) return
 
@@ -273,12 +279,13 @@ async function handleSubmitOrder(payload: any) {
       orderSubmitSuccess.value = false
     }, 2000)
   } catch (error: any) {
-    orderSubmitError.value = error?.message || "Nepodarilo sa zadať príkaz"
+    orderSubmitError.value = error?.message || "Nepodarilo sa zadaÅ¥ prÃ­kaz"
   } finally {
     orderSubmitting.value = false
   }
 }
 
+// Detail aktiva
 function openAssetDetail(holding: DashboardHolding) {
   detailAsset.value = holding
   showDetail.value = true
@@ -289,6 +296,7 @@ function closeDetail() {
   detailAsset.value = null
 }
 
+// Watchlist operacie
 async function handleAddWatchlist(symbol: string) {
   if (!currentUserId.value || !symbol.trim()) return
   const normalizedSymbol = symbol.trim().toUpperCase()
@@ -305,7 +313,7 @@ async function handleAddWatchlist(symbol: string) {
     watchlist.value = await getWatchlistItems(currentUserId.value)
   } catch (error: any) {
     loadError.value =
-      error?.message || "Nepodarilo sa pridať do sledovaného zoznamu"
+      error?.message || "Nepodarilo sa pridaÅ¥ do sledovanÃ©ho zoznamu"
   }
 }
 
@@ -315,19 +323,21 @@ async function handleRemoveWatchlist(itemId: number) {
     watchlist.value = await getWatchlistItems(currentUserId.value)
   } catch (error: any) {
     loadError.value =
-      error?.message || "Nepodarilo sa odstrániť zo sledovaného zoznamu"
+      error?.message || "Nepodarilo sa odstrÃ¡niÅ¥ zo sledovanÃ©ho zoznamu"
   }
 }
 
+// Zrusenie objednavky
 async function handleCancelOrder(orderId: number) {
   try {
     await cancelOrder(orderId)
     openOrders.value = await getOpenOrders(portfolioId.value)
   } catch (error: any) {
-    loadError.value = error?.message || "Nepodarilo sa zrušiť príkaz"
+    loadError.value = error?.message || "Nepodarilo sa zruÅ¡iÅ¥ prÃ­kaz"
   }
 }
 
+// Uprava objednavky
 function startEditOrder(order: DashboardOrder) {
   editingOrder.value = order
 }
@@ -348,12 +358,13 @@ async function saveEditOrder(payload: {
     openOrders.value = await getOpenOrders(portfolioId.value)
     editingOrder.value = null
   } catch (error: any) {
-    loadError.value = error?.message || "Nepodarilo sa upraviť príkaz"
+    loadError.value = error?.message || "Nepodarilo sa upraviÅ¥ prÃ­kaz"
   } finally {
     editSaving.value = false
   }
 }
 
+// Formatovanie meny
 function formatCurrency(value: number) {
   return Number(value || 0).toLocaleString("sk-SK", {
     style: "currency",
@@ -398,7 +409,7 @@ onUnmounted(() => {
   background: var(--color-background);
 }
 
-/* ── Header ── */
+/* â”€â”€ Header â”€â”€ */
 .dash-header {
   background: var(--color-background-soft);
   border-bottom: 1px solid var(--color-border);
@@ -479,7 +490,7 @@ onUnmounted(() => {
   color: var(--color-text-muted);
 }
 
-/* ── Profile Dropdown ── */
+/* â”€â”€ Profile Dropdown â”€â”€ */
 .profile-dropdown {
   position: absolute;
   top: 100%;
@@ -574,14 +585,14 @@ onUnmounted(() => {
   display: none;
 }
 
-/* ── Main ── */
+/* â”€â”€ Main â”€â”€ */
 .dash-main {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-/* ── Portfolio Summary ── */
+/* â”€â”€ Portfolio Summary â”€â”€ */
 .portfolio-summary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -635,7 +646,7 @@ onUnmounted(() => {
   );
 }
 
-/* ── Panels ── */
+/* â”€â”€ Panels â”€â”€ */
 .panel {
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
@@ -650,7 +661,7 @@ onUnmounted(() => {
   color: var(--color-white);
 }
 
-/* ── Grid Layout ── */
+/* â”€â”€ Grid Layout â”€â”€ */
 .dash-grid {
   display: grid;
   grid-template-columns: 1fr 360px;
@@ -664,7 +675,7 @@ onUnmounted(() => {
   gap: 1.25rem;
 }
 
-/* ── Holdings Table ── */
+/* â”€â”€ Holdings Table â”€â”€ */
 .table-wrapper {
   overflow-x: auto;
 }
@@ -759,7 +770,7 @@ onUnmounted(() => {
   color: #ef4444;
 }
 
-/* ── Order Form ── */
+/* â”€â”€ Order Form â”€â”€ */
 .order-tabs {
   display: flex;
   gap: 0;
@@ -862,7 +873,7 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
 }
 
-/* ── Watchlist ── */
+/* â”€â”€ Watchlist â”€â”€ */
 .watchlist {
   display: flex;
   flex-direction: column;
@@ -898,7 +909,7 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* ── Open Orders ── */
+/* â”€â”€ Open Orders â”€â”€ */
 .orders-list {
   display: flex;
   flex-direction: column;
@@ -959,7 +970,7 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* ── Recent Trades ── */
+/* â”€â”€ Recent Trades â”€â”€ */
 .trades-list {
   display: flex;
   flex-direction: column;
@@ -1017,7 +1028,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 @media (max-width: 1024px) {
   .dash-grid {
     grid-template-columns: 1fr;
@@ -1050,7 +1061,7 @@ onUnmounted(() => {
   }
 }
 
-/* ── Loading / Error ── */
+/* â”€â”€ Loading / Error â”€â”€ */
 .dash-loading,
 .dash-error {
   display: flex;
@@ -1093,7 +1104,7 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
 }
 
-/* ── Market Price Row ── */
+/* â”€â”€ Market Price Row â”€â”€ */
 .market-price-row {
   display: flex;
   align-items: center;
@@ -1122,7 +1133,7 @@ onUnmounted(() => {
   margin-left: auto;
 }
 
-/* ── Order Type Tabs ── */
+/* â”€â”€ Order Type Tabs â”€â”€ */
 .type-tabs {
   display: flex;
   gap: 0;
@@ -1154,7 +1165,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-/* ── Order Summary ── */
+/* â”€â”€ Order Summary â”€â”€ */
 .order-summary {
   padding: 0.75rem;
   background: rgba(59, 130, 246, 0.04);
@@ -1177,7 +1188,7 @@ onUnmounted(() => {
   font-weight: 700;
 }
 
-/* ── Confirmation Modal ── */
+/* â”€â”€ Confirmation Modal â”€â”€ */
 .confirm-overlay {
   position: fixed;
   inset: 0;
@@ -1248,7 +1259,7 @@ onUnmounted(() => {
   border-color: var(--color-text-muted);
 }
 
-/* ── Status Badges ── */
+/* â”€â”€ Status Badges â”€â”€ */
 .status-pending {
   color: #f59e0b;
 }
@@ -1266,7 +1277,7 @@ onUnmounted(() => {
   opacity: 0.7;
 }
 
-/* ── Holding Row Clickable ── */
+/* â”€â”€ Holding Row Clickable â”€â”€ */
 .holding-row {
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -1275,7 +1286,7 @@ onUnmounted(() => {
   background: rgba(59, 130, 246, 0.06) !important;
 }
 
-/* ── Asset Detail Modal ── */
+/* â”€â”€ Asset Detail Modal â”€â”€ */
 .detail-overlay {
   position: fixed;
   inset: 0;
@@ -1374,7 +1385,7 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* ── Detail Tabs ── */
+/* â”€â”€ Detail Tabs â”€â”€ */
 .detail-tabs {
   display: flex;
   gap: 0;
@@ -1401,7 +1412,7 @@ onUnmounted(() => {
   background: rgba(59, 130, 246, 0.12);
 }
 
-/* ── Chart ── */
+/* â”€â”€ Chart â”€â”€ */
 .chart-section {
   min-height: 200px;
 }
@@ -1471,7 +1482,7 @@ onUnmounted(() => {
   font-size: 0.9rem;
 }
 
-/* ── Profit Tab ── */
+/* â”€â”€ Profit Tab â”€â”€ */
 .profit-summary {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1555,7 +1566,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-/* ── Panel Header ── */
+/* â”€â”€ Panel Header â”€â”€ */
 .panel-header {
   display: flex;
   align-items: center;
@@ -1583,7 +1594,7 @@ onUnmounted(() => {
   background: rgba(59, 130, 246, 0.2);
 }
 
-/* ── Watchlist Add Form ── */
+/* â”€â”€ Watchlist Add Form â”€â”€ */
 .watchlist-add-form {
   display: flex;
   gap: 0.5rem;
@@ -1646,7 +1657,7 @@ onUnmounted(() => {
   text-align: center;
 }
 
-/* ── Edit Order Button ── */
+/* â”€â”€ Edit Order Button â”€â”€ */
 .edit-btn {
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -1666,7 +1677,7 @@ onUnmounted(() => {
   background: rgba(59, 130, 246, 0.2);
 }
 
-/* ── Edit Input (shared) ── */
+/* â”€â”€ Edit Input (shared) â”€â”€ */
 .edit-input {
   background: var(--color-background-mute);
   border: 1px solid var(--color-border);
@@ -1684,7 +1695,7 @@ onUnmounted(() => {
   border-color: var(--color-accent);
 }
 
-/* ── Chart Tooltip ── */
+/* â”€â”€ Chart Tooltip â”€â”€ */
 .chart-tooltip {
   position: absolute;
   top: -8px;
@@ -1717,7 +1728,7 @@ onUnmounted(() => {
   color: var(--color-text-muted);
 }
 
-/* ── Form Hint ── */
+/* â”€â”€ Form Hint â”€â”€ */
 .form-hint {
   font-size: 0.75rem;
   color: var(--color-text-muted);
@@ -1734,7 +1745,7 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
-/* ── History Modal ── */
+/* â”€â”€ History Modal â”€â”€ */
 .history-modal {
   background: var(--color-background);
   border: 1px solid var(--color-border);

@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+// Otvorene objednavky
 import { computed } from 'vue'
 
 const props = defineProps<{

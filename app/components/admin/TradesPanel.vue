@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+// Tabulka obchodov
 const props = defineProps<{
   trades: any[]
 }>()
